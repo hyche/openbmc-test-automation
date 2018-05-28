@@ -1,0 +1,94 @@
+#https://github.com/openbmc/openbmc-test-automation/issues/123
+-e Execute_ipmi_BT_capabilities_command
+#https://github.com/openbmc/openbmc/issues/612
+-e Create_and_delete_user_without_group_name
+-e Create_and_delete_user_with_user_group_name
+-e Create_multiple_users
+-e Create_and_delete_user_without_password
+-e Set_password_for_existing_user
+-e Set_password_with_empty_password_for_existing
+-e Create_existing_user
+#https://github.com/openbmc/openbmc/issues/901
+-e Set_BMC_Time_With_Split_And_Manual
+#https://github.com/openbmc/openbmc/issues/1142
+-e Check_BMC_Name_Property_Is_Set
+-e Check_BMC_Clocks_Name_Property_Is_Set
+-e Check_BMC_Clocks_Compatible_Property_Is_Set
+#https://github.com/openbmc/openbmc-test-automation/issues/396
+-e NetworkManager
+
+#### Osprey excluded tests
+# NA test case for Osprey
+-e Verify_Front_And_Rear_LED_At_Standby
+-e io_board_Present
+-e io_board_Fault
+-e Test_Heartbeat_LED_And_Verify_Via_REST
+-e Test_Beep_LED_And_Verify_Via_REST
+-e Test_Identify_LED_And_Verify_Via_REST
+-e Escale_Base_Test_Deactive_Monitoring
+-e Escale_Base_Test_Active_Monitoring
+-e Escale_Power_Setting_Via_REST_And_Verify
+-e Escale_Power_Setting_Via_IPMI_And_Verify
+-e Escale_System_On_And_PL_Enabled
+-e Escale_System_On_And_PL_Disabled
+-e Escale_Check_Settings_System_On_Then_Off
+-e Escale_Check_Settings_System_Off_Then_On
+-e Escale_Change_Limit_At_Runtime
+-e Escale_Disable_And_Enable_At_Runtime
+-e Verify_PCIE_Sensor_Attributes
+-e Verify_PCIE_Sensor_Attributes
+-e Verify_VDN_Temperature_Sensors_Attributes
+-e Verify_VCS_Temperature_Sensors_Attributes
+-e Verify_VDDR_Temperature_Sensors_Attributes
+-e Disable_Power_Redundancy_And_Verify_Using_REST
+-e Enable_Power_Redundancy_And_Verify_Using
+-e Disable_Power_Redundancy_And_Verify_Using_IPMI
+-e Enable_Power_Redundancy_And_Verify_Using_IPMI
+-e Verify_Host_Quiesce_State_Without_Auto_Reboot_During_Boot
+-e Verify_Host_Quiesce_State_With_Auto_Reboot_During_Boot
+-e Verify_Boxelder_Present_Property
+-e Verify_Boxelder_MAC_Address_Property_Is_Populated
+-e Verify_CPU_Present
+-e Verify_DIMM_Present
+-e Verify_GPU_Properties
+-e Verify_Core_Properties
+-e Verify_Core_Functional_State
+-e Verify_DIMM_Functional_State
+-e Verify_CPU_Functional_State
+-e Verify_GPU_Functional_State
+-e Verify_Minimal_Core_Inventory
+-e Verify_Minimal_Memory_Buffer_Inventory
+-e Verify_CPU_Fault_LEDs_Group
+-e Verify_DIMM_Fault_LEDs_Group
+-e Verify_GPU_Fault_LEDs_Group
+-e Verify_Power_Supply_Fault_LEDs_Group
+-e Verify_Other_Fault_LEDs_Group
+-e Verify_Enclosure_Fault_LED_On_Assertion
+-e Verify_Rear_Power_LED_Association_With_Group_LED
+-e Test_Power_LED_And_Verify_Via_REST
+-e Test_Rear_Identify_LED_And_Verify_Via_REST
+-e Verify_Rear_Power_LED_With_Host_Power_Off
+-e Verify_Rear_Power_LED_With_Host_Power_On
+-e OCC_Active_Disable_And_Enable
+-e Test_CPU_Core_SDR_Info_At_Power_On
+-e Test_DIMM_SDR_Info_At_Power_On
+-e Test_GPU_SDR_Info_At_Power_On
+-e Test_CPU_Core_SDR_Info_At_Power_Off
+-e Test_DIMM_SDR_Info_At_Power_Off
+-e Test_Turbo_Allowed_SDR_Info
+-e Test_Auto_Reboot_SDR_Info
+-e Test_TPM_Enable_SDR_Info
+-e DIMM_Present_And_Not_Present
+-e DIMM_Functional_And_Not_Functional
+-e CPU_Present
+-e CPU_Not_Present
+-e CPU_Functional
+-e CPU_Not_Functional
+-e GPU_Present
+-e GPU_Not_Present
+-e GPU_Functional
+-e GPU_Not_Functional
+-e Core_Present
+-e Core_Not_Present
+-e Core_Functional
+-e Core_Not_Functional
