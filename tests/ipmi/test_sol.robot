@@ -179,6 +179,16 @@ Set Valid SOL Character Send Threshold
 
     [Template]  Verify SOL Setting
 
+Get SOL Payload Status
+    [Documentation]  Verify SOL Payload Status via IPMI.
+    [Tags]  Get_SOL_Payload_Status
+
+    # Run IPMI sol payload status command and get output as message
+    ${msg}=  Run Keyword  Run IPMI Standard Command
+    ...  sol payload status
+
+    Should Not Contain  '${msg}'  Error
+
 *** Keywords ***
 
 Check IPMI SOL Output Content
