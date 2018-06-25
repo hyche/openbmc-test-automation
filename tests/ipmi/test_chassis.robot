@@ -83,6 +83,15 @@ Verify Soft Shutdown via IPMI
     Run External IPMI Standard Command  chassis power soft
     Wait Until Keyword Succeeds  3 min  10 sec  Is Host Off
 
+Verify Chassis Reset via IPMI
+    [Documentation]  This test case verfies system power reset
+    ...              using IPMI Get Chassis power reset command.
+    [Tags]  IPMI_Chassis_Power_Reset
+
+    Run External IPMI Standard Command  chassis power reset
+
+    Wait Until Keyword Succeeds  30 sec  10 sec  Is Chassis Off
+    Wait Until Keyword Succeeds  3 min  10 sec  Is Chassis On
 
 *** Keywords ***
 
