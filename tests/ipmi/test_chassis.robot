@@ -93,6 +93,15 @@ Verify Chassis Reset via IPMI
     Wait Until Keyword Succeeds  30 sec  10 sec  Is Chassis Off
     Wait Until Keyword Succeeds  3 min  10 sec  Is Chassis On
 
+IPMI Chassis POH
+    [Documentation]  This test case verifies the Power-On Hours counter
+    ...              by using IPMI Chassis POH command.
+    [Tags]  IPMI_Chassis_POH
+
+    ${resp}=  Run IPMI Standard Command  chassis poh
+    Should Contain  ${resp}    days
+    Should Contain  ${resp}    hours
+
 *** Keywords ***
 
 Test Teardown Execution
