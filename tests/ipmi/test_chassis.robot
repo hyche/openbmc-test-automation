@@ -111,6 +111,15 @@ IPMI Chassis Restore Power Policy List
     Should Not Contain  ${resp}    Invalid command
     Should Not Contain  ${resp}    Unspecified error
 
+Verify Power Policy Capability Attribute
+    [Documentation]  Verify the power policy capability attribute
+    ...              by checking PowerPolicyCap attribute on D-Bus
+    [Tags]  Verify_Power_Policy_Capability_Attribute
+
+    ${power_policy_capability}=  Read Attribute
+    ...  ${CONTROL_HOST_URI}/power_policy_cap  PowerPolicyCap
+
+
 *** Keywords ***
 
 Test Teardown Execution
