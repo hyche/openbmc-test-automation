@@ -102,6 +102,15 @@ IPMI Chassis POH
     Should Contain  ${resp}    days
     Should Contain  ${resp}    hours
 
+IPMI Chassis Restore Power Policy List
+    [Documentation]  This test case verifies the supported power policy
+    ...              by using IPMI Chassis policy list command.
+    [Tags]  IPMI_Chassis_Restore_Power_Policy_List
+
+    ${resp}=  Run IPMI Standard Command  chassis policy list
+    Should Not Contain  ${resp}    Invalid command
+    Should Not Contain  ${resp}    Unspecified error
+
 *** Keywords ***
 
 Test Teardown Execution
