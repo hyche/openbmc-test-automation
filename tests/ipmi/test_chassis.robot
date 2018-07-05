@@ -119,6 +119,30 @@ Verify Power Policy Capability Attribute
     ${power_policy_capability}=  Read Attribute
     ...  ${CONTROL_HOST_URI}/power_policy_cap  PowerPolicyCap
 
+IPMI Chassis Policy Always On
+    [Documentation]  This test case verifies the power policy always-on
+    ...              by using IPMI Chassis policy always-on command.
+    [Tags]  IPMI_Chassis_Policy_Always_On
+
+    Run External IPMI Standard Command  chassis power off
+    Wait Until Keyword Succeeds  30 sec  10 sec  Is Chassis Off
+
+    ${resp}=  Run External IPMI Standard Command  chassis policy always-on
+    Should Not Contain  ${resp}    Invalid command
+    Should Not Contain  ${resp}    Unspecified error
+
+    ${resp}=  Run External IPMI Standard Command  chassis status
+    ${power_policy}=
+    ...  Get Lines Containing String  ${resp}  Power Restore Policy
+    Should Contain  ${power_policy}  always-on
+
+    # TODO (Hoang): Need to replace the "Warm BMC Reset" to "Hard Power Reset"
+    #               To simulate the case: AC/mains was removed or lost
+    Run External IPMI Standard Command  mc reset warm
+
+    Sleep  60s
+
+    Wait Until Keyword Succeeds  3 min  10 sec  Is Chassis On
 
 *** Keywords ***
 
