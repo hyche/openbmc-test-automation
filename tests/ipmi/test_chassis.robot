@@ -207,6 +207,14 @@ IPMI Chassis Policy Previous
 
     Wait Until Keyword Succeeds  3 min  10 sec  Is Chassis On
 
+IPMI Chassis SelfTest
+    [Documentation]  This test case verifies the chassis self-test function
+    ...              by using IPMI Chassis selftest command.
+    [Tags]  IPMI_Chassis_SelfTest
+
+    ${resp}=  Run IPMI Standard Command  chassis selftest
+    Should Not Contain  ${resp}    Invalid command
+
 *** Keywords ***
 
 Test Teardown Execution
