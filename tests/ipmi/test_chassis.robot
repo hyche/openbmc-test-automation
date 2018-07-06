@@ -144,6 +144,33 @@ IPMI Chassis Policy Always On
 
     Wait Until Keyword Succeeds  3 min  10 sec  Is Chassis On
 
+# TODO (Hoang): need to refactor this test case, due to the same procedure as
+#               IPMI Chassis Policy Always On
+IPMI Chassis Policy Always Off
+    [Documentation]  This test case verifies the power policy always-off
+    ...              by using IPMI Chassis policy always-off command.
+    [Tags]  IPMI_Chassis_Policy_Always_Off
+
+    Run External IPMI Standard Command  chassis power off
+    Wait Until Keyword Succeeds  30 sec  10 sec  Is Chassis Off
+
+    ${resp}=  Run External IPMI Standard Command  chassis policy always-off
+    Should Not Contain  ${resp}    Invalid command
+    Should Not Contain  ${resp}    Unspecified error
+
+    ${resp}=  Run External IPMI Standard Command  chassis status
+    ${power_policy}=
+    ...  Get Lines Containing String  ${resp}  Power Restore Policy
+    Should Contain  ${power_policy}  always-off
+
+    # TODO (Hoang): Need to replace the "Warm BMC Reset" to "Hard Power Reset"
+    #               To simulate the case: AC/mains was removed or lost
+    Run External IPMI Standard Command  mc reset warm
+
+    Sleep  60s
+
+    Wait Until Keyword Succeeds  3 min  10 sec  Is Chassis Off
+
 *** Keywords ***
 
 Test Teardown Execution
