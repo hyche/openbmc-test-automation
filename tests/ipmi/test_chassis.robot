@@ -215,6 +215,14 @@ IPMI Chassis SelfTest
     ${resp}=  Run IPMI Standard Command  chassis selftest
     Should Not Contain  ${resp}    Invalid command
 
+IPMI Basic Chassis Restart Cause
+    [Documentation]  This basic test case verifies system restart cause by
+    ...               using IPMI Get Chassis restart cause command
+    [Tags]  IPMI_Basic_Chassis_Restart_Cause
+
+    ${resp}= Run External IPMI Standard Command  chassis restart_cause
+    Should Not Contain  ${resp}  Invalid command
+
 *** Keywords ***
 
 Test Teardown Execution
