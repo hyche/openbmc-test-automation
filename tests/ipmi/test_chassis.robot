@@ -215,13 +215,13 @@ IPMI Chassis SelfTest
     ${resp}=  Run IPMI Standard Command  chassis selftest
     Should Not Contain  ${resp}    Invalid command
 
-IPMI Basic Chassis Restart Cause
-    [Documentation]  This basic test case verifies system restart cause by
+IPMI Chassis Restart Cause
+    [Documentation]  This test case verifies system restart cause by
     ...               using IPMI Get Chassis restart cause command
-    [Tags]  IPMI_Basic_Chassis_Restart_Cause
+    [Tags]  IPMI_Chassis_Restart_Cause
 
-    ${resp}= Run External IPMI Standard Command  chassis restart_cause
-    Should Not Contain  ${resp}  Invalid command
+    Chassis Restart Cause Basic Test
+    Chassis Restart Cause Advanced Test
 
 *** Keywords ***
 
@@ -231,3 +231,20 @@ Test Teardown Execution
     Set BMC Power Policy  ${ALWAYS_POWER_OFF}
 
     FFDC On Test Case Fail
+
+Chassis Restart Cause Basic Test
+    [Documentation]  Run basic test to verify system restart cause
+
+    ${resp}=  Run External IPMI Standard Command  chassis restart_cause
+    Should Not Contain  ${resp}    Invalid command
+
+Chassis Restart Cause Advanced Test
+    [Documentation]  Reset system and verify system restart cause
+
+    Run External IPMI Standard Command  chassis power reset
+    Wait Until Keyword Succeeds  3 min  10 sec  Is Chassis On
+
+    ${resp}=  Run External IPMI Standard Command  chassis restart_cause
+    Should Contain  ${resp}  chassis power control command
+
+
