@@ -32,6 +32,33 @@ Verify Adding SEL with IPMI
     Check SEL Log  ${resp}  Voltage #0x3b  Lower Critical going low  Asserted
     Check SEL Log  ${resp}  System Event  Timestamp Clock Sync  Asserted
 
+Verify Adding Sample Event with IPMI
+    [Documentation]  Verify adding sample event into BMC
+    ...              by using IPMI event 1/2/3 commands
+    [Tags]  Verify_Adding_Sample_Event_with_IPMI
+
+    ${resp}=  Run External IPMI Standard Command  sel clear
+    Should Not Contain  ${resp}    Invalid command
+
+    # The source data of following error sources:
+    # event 1. Temperature #0x30 | Upper Critical going high | Asserted
+    # event 2. Voltage #0x60 | Lower Critical going low  | Asserted
+    # event 3. Memory #0x53 | Correctable ECC | Asserted
+    ${resp}=  Run External IPMI Standard Command  event 1
+    Should Not Contain  ${resp}    Invalid command
+
+    ${resp}=  Run External IPMI Standard Command  event 2
+    Should Not Contain  ${resp}    Invalid command
+
+    ${resp}=  Run External IPMI Standard Command  event 3
+    Should Not Contain  ${resp}    Invalid command
+
+    ${resp}=  Run External IPMI Standard Command  sel list
+    Check SEL Log  ${resp}  Temperature #0x30  Upper Critical going high  Asserted
+    Check SEL Log  ${resp}  Voltage #0x60  Lower Critical going low  Asserted
+    Check SEL Log  ${resp}  Memory #0x53  Correctable ECC  Asserted
+
+
 *** Keywords ***
 
 Check SEL Log
