@@ -1,7 +1,7 @@
 # List of sanity test cases from folder tests
 -i Power_On_Test
--i Check_For_Application_ Failures
--i Verify_Uptime_Average_Agains_Threshold
+-i Check_For_Application_Failures
+-i Verify_Uptime_Average_Against_Threshold
 -i Test_SSH_And_IPMI_Connections
 -i Verify_User_Initiated_BMC_Dump_When_Host_Booted
 -i Test_BMC_Reboot_via_REST
