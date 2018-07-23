@@ -8,6 +8,10 @@ OPENPOWER_BASE_URI = '/org/open_power/'
 OPENPOWER_CONTROL = OPENPOWER_BASE_URI + 'control/'
 OPENPOWER_SENSORS = OPENPOWER_BASE_URI + 'sensors/'
 
+# redfish URI
+REDFISH_BASE_URI = '/redfish/v1/'
+REDFISH_MANAGERS_URI = REDFISH_BASE_URI + 'Managers/'
+
 # REST URI base endpoint paths.
 CONTROL_URI = OPENBMC_BASE_URI + 'control/'
 # old vs new code dependencies in many places.
