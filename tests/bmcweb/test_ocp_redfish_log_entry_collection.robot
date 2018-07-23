@@ -1,8 +1,7 @@
 *** Settings ***
 Documentation          Test Log Entry Collection schema.
 
-Library                OperatingSystem
-
+Resource               ../../lib/redfish.robot
 Resource               ../../lib/rest_client.robot
 Resource               ../../lib/openbmc_ffdc.robot
 
@@ -56,19 +55,6 @@ Parse Json From Response
 
     ${resp}=          Get Request Node  ${uri}
     ${json}=          To JSON  ${resp.content}
-    [Return]          ${json}
-
-Parse Json From File
-    [Documentation]    Read expected JSON file then convert to JSON object.
-    [Arguments]  ${json_file_path}
-
-    # Description of argument(s):
-    # json_file_path    Path of target json file
-
-    OperatingSystem.File Should Exist  ${json_file_path}
-    OperatingSystem.File Should Not Be Empty  ${json_file_path}
-    ${file}=          OperatingSystem.Get File  ${json_file_path}
-    ${json}=          To JSON  ${file}
     [Return]          ${json}
 
 Check Response Status

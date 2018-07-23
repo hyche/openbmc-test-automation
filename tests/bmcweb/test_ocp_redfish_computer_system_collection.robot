@@ -1,7 +1,7 @@
 *** Setting ***
 Documentation          This suite tests for ComputerSystem schema version 1.5.0
 
-Library                OperatingSystem
+Resource               ../../lib/redfish.robot
 Resource               ../../lib/rest_client.robot
 Resource               ../../lib/openbmc_ffdc.robot
 
@@ -27,7 +27,7 @@ Test Computer System Collection
     [Tags]             Test_Computer_System_Collection
 
     ${output_json}=    Get From Response
-    ${expected_json}=  Get From File  ${file_json}
+    ${expected_json}=  Parse Json From File  ${file_json}
     Should Be Equal  ${output_json}  ${expected_json}
 
 *** Keywords ***
@@ -48,19 +48,6 @@ Get From Response
 
     ${resp}=          Get Uri Node  ${system_uri}
     ${json}=          To JSON  ${resp.content}
-    [Return]           ${json}
-
-Get From File
-    [Documentation]    Read expected JSON file the convert to JSON object.
-    [Arguments]        ${json_path}
-
-    # Description of argument:
-    # json_path        The path of json file
-
-    OperatingSystem.File Should Exist  ${json_path}
-    OperatingSystem.File Should Not Be Empty  ${json_path}
-    ${file}=          OperatingSystem.Get File  ${json_path}
-    ${json}=          To JSON  ${file}
     [Return]           ${json}
 
 Test Teardown Execution
