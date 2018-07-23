@@ -3,11 +3,5 @@
   "@odata.id": "/redfish/v1/Systems/1/LogServices/SEL/Entries",
   "@odata.type": "#LogEntryCollection.LogEntryCollection",
   "Description": "Collection of Logs for this System",
-  "Members@odata.count": 1,
-  "Members": [
-    {
-      "@odata.id": "/redfish/v1/Systems/1/LogServices/SEL/Entries/1"
-    }
-  ],
   "Name": "Log Service Collection"
 }
