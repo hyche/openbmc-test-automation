@@ -614,6 +614,27 @@ Test Invalid IPMI Channel Response
     Should Contain  ${stdout}  Invalid channel
     ...  msg=IPMI channel ${channel_number} is invalid but seen working.
 
+Verify IPMI User List
+    [Documentation]  This test case verifies ipmi user list command.
+    [Tags]  Verify_IPMI_User_List
+
+    # Example of output for "user list command" :
+    # ID  Name         Callin  Link Auth    IPMI Msg   Channel Priv Limit
+    # 1                    true    true       true       NO ACCESS
+    # 2   admin            false   false      true       ADMINISTRATOR
+    # 3   Admin            false   false      true       ADMINISTRATOR
+    # 4                    false   false      true       ADMINISTRATOR
+
+    # Verify if user root or admin is exist.
+
+    ${resp}=  Run External IPMI Standard Command  user list
+    ${list}=  Get Lines Matching Regexp
+    ...  ${resp}  root|admin  partial_match=true
+    @{word}=  Split String  ${list}
+    Run Keyword If  '@{word}[4]' != 'true' or '@{word}[5]' != 'ADMINISTRATOR'
+    ...  Should Be Equal  @{word}[10]  true
+    Run Keyword If  '@{word}[4]' != 'true' or '@{word}[5]' != 'ADMINISTRATOR'
+    ...  Should Be Equal  @{word}[11]  ADMINISTRATOR
 
 *** Keywords ***
 
