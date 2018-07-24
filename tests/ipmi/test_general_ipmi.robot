@@ -192,6 +192,11 @@ Test Watchdog Off Via IPMI And Verify Using REST
     Should Be Equal  ${watchdog_state}  ${0}
     ...  msg=msg=Verification failed for watchdog off check.
 
+Test Watchdog Get Via IPMI
+    [Documentation]  Test watchdog get via IPMI
+    [Tags]  Test_Watchdog_Get_Via_IPMI
+
+    Check Watchdog Get After Set Initial Countdown  ${321}
 
 Test Ambient Temperature Via IPMI
     [Documentation]  Test ambient temperature via IPMI and verify using REST.
@@ -593,6 +598,66 @@ Test Invalid IPMI Channel Response
 
 
 *** Keywords ***
+
+Get Key Value From Output
+    [Documentation]  Get key value after colon and strip whitespace.
+    [Arguments]  ${buffer}  ${key}
+
+    # Example:
+    # Buffer:
+    # Watchdog Timer Use:     SMS/OS (0x04)
+    # Watchdog Timer Is:      Stopped
+    # Watchdog Timer Actions: No action (0x00)
+    # Pre-timeout interval:   0 seconds
+    # Timer Expiration Flags: 0x00
+    # Initial Countdown:      300 sec
+    # Present Countdown:      300 sec
+    #
+    # Call: Get Key Value From Output  ${buffer}  Watchdog Timer Is
+    # Return: Started/Running
+
+    ${line} =  Get Lines Containing String  ${buffer}  ${key}
+    Should Be String  ${line}  msg=Not found key: ${key}
+    Should Contain  ${line}  :
+    ${output} =  Fetch From Right  ${line}  :${SPACE}
+    ${output} =  Strip String  ${output}
+    [Return]  ${output}
+
+
+Check Watchdog Get After Set Initial Countdown
+    [Documentation]  Set watchdog initial countdown with raw IPMI then
+    ...  check get response. Argument: time in second
+    [Arguments]  ${time}
+
+    ${time} =  Convert To Integer  ${time}
+    ${time_lsb} =  Evaluate  (${time}*10) & 0xFF
+    ${time_lsb} =  Convert To Hex  ${time_lsb}  prefix=0x  length=2
+    ${time_msb} =  Evaluate  ((${time}*10) >> 8) & 0xFF
+    ${time_msb} =  Convert To Hex  ${time_msb}  prefix=0x  length=2
+
+    # Set initial countdown via raw IPMI don't care result
+    # We choose timer use: SMS/OS, no action
+    Run IPMI Standard Command  raw 0x06 0x24 0x04 0x00 0x01 0x00 ${time_lsb} ${time_msb}
+
+    ${resp} =  Run IPMI Standard Command  mc watchdog get
+
+    # Example of watchdog get result:
+    #
+    # Watchdog Timer Use:     SMS/OS (0x04)
+    # Watchdog Timer Is:      Stopped
+    # Watchdog Timer Actions: No action (0x00)
+    # Pre-timeout interval:   0 seconds
+    # Timer Expiration Flags: 0x00
+    # Initial Countdown:      300 sec
+    # Present Countdown:      300 sec
+
+    ${value} =  Get Key Value From Output  ${resp}  Watchdog Timer Use
+    Should Contain  ${value}  SMS/OS  msg=Wrong Watchdog Timer Use
+    ${output} =  Get Key Value From Output  ${resp}  Initial Countdown
+    ${output} =  Fetch From Left  ${output}  ${SPACE}
+
+    Should Be Equal As Strings  ${output}  ${time}  msg=Wrong Initial Countdown
+
 
 Get Sensor Count
     [Documentation]  Get sensors count using "sdr elist all" command.
