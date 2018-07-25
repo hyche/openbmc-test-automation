@@ -398,3 +398,31 @@ COMPUTER_SYSTEM_ITEMS = {
         "Critical",
     ],
 }
+
+# redfish log collection items from DSP8010_2018.1 Redfish Schema Bundle.
+# Contain list status which got from redfish.
+LOG_COLLECTION_ITEMS = {
+    "OVERWRITEPOLICY": [
+        "Unknown",
+        "WrapsWhenFull",
+        "NeverOverWrites",
+    ],
+    "STATE": [
+        "Enabled",
+        "Disabled",
+        "StandbyOffline",
+        "StandbySpare",
+        "InTest",
+        "Starting",
+        "Absent",
+        "UnavailableOffline",
+        "Deferring",
+        "Quiesced",
+        "Updating",
+    ],
+    "HEALTH": [
+        "OK",
+        "Warning",
+        "Critical",
+    ],
+}

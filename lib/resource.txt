@@ -100,3 +100,8 @@ Get Sensor Schema
     [Documentation]  Get sensors schema.
     [Arguments]    ${machine}
     [Return]    &{SENSORS}[${machine}]
+
+Get Log Collection Items Schema
+    [Documentation]  Get Log Collection Items.
+    [Arguments]    ${machine}
+    [Return]     &{LOG_COLLECTION_ITEMS}[${machine}]

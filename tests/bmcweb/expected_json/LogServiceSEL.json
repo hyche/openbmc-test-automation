@@ -1,0 +1,16 @@
+{
+    "@odata.context": "/redfish/v1/$metadata#LogService.LogService",
+    "@odata.id": "/redfish/v1/Systems/1/LogServices/SEL",
+    "@odata.type": "#LogService.v1_1_0.LogService",
+    "Actions": {
+        "#LogService.ClearLog": {
+            "target": "/redfish/v1/Systems/1/LogServices/SEL/Actions/LogService.Reset"
+        }
+    },
+    "Entries": {
+        "@odata.id": "/redfish/v1/Systems/1/LogServices/SEL/Entries"
+    },
+    "Id": "SEL",
+    "MaxNumberOfRecords": 200,
+    "Name": "System Log Service"
+}
