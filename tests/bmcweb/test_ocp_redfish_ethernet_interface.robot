@@ -13,6 +13,7 @@ ${eth_id}                   eth0
 ${eth_uri}                  SEPARATOR=${Empty}  ${REDFISH_MANAGERS_URI}  bmc/
 ...                         EthernetInterfaces/  ${eth_id}
 ${valid_ipv4}               10.38.15.201
+${valid_ipv4_2}             10.38.15.202
 ${valid_ipv4_subnet_mask}   255.255.252.0
 ${valid_ipv4_prefix_len}    ${22}
 ${valid_ipv4_gateway}       10.38.12.1
@@ -62,6 +63,44 @@ Delete Non Existing IPv4 Via Redfish And Verify
 
     ${ipv4_info_list_after}=  Redfish Get Property  ${eth_uri}  IPv4Addresses
     Lists Should Be Equal  ${ipv4_info_list}  ${ipv4_info_list_after}
+
+Change IPv4 With Empty Entry Via Redfish And Verify
+    [Documentation]  Change existing IPv4 via redfish with empty entry
+    ...  (ie. {}) in request data, and then verify.
+    [Tags]  Change_IPv4_With_Empty_Entry_Via_Redfish_And_Verify
+
+    ${ipv4_info_list}=  Get From Dictionary  ${ethernet_info}  IPv4Addresses
+    Add New IPv4 Via Redfish  ${valid_ipv4}  ${valid_ipv4_subnet_mask}
+    ...  ${valid_ipv4_gateway}  ${False}  @{ipv4_info_list}
+    Verify IP On BMC  ${valid_ipv4}  valid    # Verify added IPv4
+
+    ${ipv4_info_list}=  Redfish Get Property  ${eth_uri}  IPv4Addresses
+    Change IPv4 Via Redfish  ${valid_ipv4}  ${Empty}  ${Empty}  ${Empty}
+    ...  @{ipv4_info_list}
+    Verify IP On BMC  ${valid_ipv4}  valid    # verify unchanged IPv4
+
+    Delete IP Via Redfish Given Address  4  ${valid_ipv4}  @{ipv4_info_list}
+    Verify IP On BMC  ${valid_ipv4}  error    # Verify deleted IPv4
+
+Change IPv4 With Only Address Via Redfish And Verify
+    [Documentation]  Change existing IPv4 via redfish with only address
+    ...  is provided in request data, and then verify.
+    [Tags]  Change_IPv4_With_Only_Address_Via_Redfish_And_Verify
+
+    ${ipv4_info_list}=  Get From Dictionary  ${ethernet_info}  IPv4Addresses
+    Add New IPv4 Via Redfish  ${valid_ipv4}  ${valid_ipv4_subnet_mask}
+    ...  ${valid_ipv4_gateway}  ${False}  @{ipv4_info_list}
+    Verify IP On BMC  ${valid_ipv4}  valid    # Verify added IPv4
+
+    ${ipv4_info_list}=  Redfish Get Property  ${eth_uri}  IPv4Addresses
+    Change IPv4 Via Redfish  ${valid_ipv4}  ${valid_ipv4_2}  ${Empty}  ${Empty}
+    ...  @{ipv4_info_list}
+    Verify IP On BMC  ${valid_ipv4}  error    # Verify deleted old IPv4
+    Verify IP On BMC  ${valid_ipv4_2}  valid  # Verify changed IPv4
+
+    ${ipv4_info_list}=  Redfish Get Property  ${eth_uri}  IPv4Addresses
+    Delete IP Via Redfish Given Address  4  ${valid_ipv4_2}  @{ipv4_info_list}
+    Verify IP On BMC  ${valid_ipv4_2}  error  # Verify deleted IPv4
 
 *** Keywords ***
 Add New IPv4 Via Redfish
@@ -139,13 +178,54 @@ Delete IP Via Redfish Given Address
     #                        "SubnetMask": "255.xxx.xxx.xxx"
     #                    }, {...}, ...]
 
-    ${index}=  Set Variable  ${0}
-    :FOR  ${ip_info}  IN  @{ip_info_list}
-    \  ${addr}=  Get From Dictionary  ${ip_info}  Address
-    \  Exit For Loop If  '${addr}' == '${ip_addr}'
-    \  ${index}=  Set Variable  ${index + 1}
-
+    ${index}=  Find Property Index In List Of Dictionaries
+    ...  Address  ${ip_addr}  @{ip_info_list}
     Delete IP Via Redfish Given Index  ${type}  ${index}  @{ip_info_list}
+
+Change IPv4 Via Redfish
+    [Documentation]  Change the IPv4 via redfish.
+    [Arguments]  ${old_addr}  ${ipv4_addr}  ${subnet_mask}  ${gateway}
+    ...  @{ipv4_info_list}
+
+    # Description of argument(s):
+    # old_addr       Old IPv4 address to be replaced by new IP address. Also,
+    #                used for finding its index to perform the replacement.
+    # ipv4_addr      New IPv4 address. If Empty, not assign it into passed data.
+    # subnet_mask    New SubnetMask. If Empty, not assign it into passed data.
+    # gateway        New Gateway. If Empty, not assign it into passed data.
+    # ipv4_info_list List of ip info got from GET request
+    #                eg: [{
+    #                        "Address": "10.xx.xx.xx",
+    #                        "AddressOrigin": "Static",
+    #                        "Gateway": "10.xx.xx.xx",
+    #                        "SubnetMask": "255.xxx.xxx.xxx"
+    #                     }, {...}, ...]
+
+    ${length}=  Get Length  ${ipv4_info_list}
+    ${index}=  Find Property Index In List Of Dictionaries
+    ...  Address  ${old_addr}  @{ipv4_info_list}
+    Run Keyword If  ${index} == ${length}
+    ...  Fail  msg=IPv4Address ${old_addr} Not Found
+
+    # Prepare inputs
+    ${ipv4_info}=  Create Dictionary
+    Run Keyword If  '${ipv4_addr}' != '${Empty}'
+    ...  Set To Dictionary  ${ipv4_info}  Address  ${ipv4_addr}
+    Run Keyword If  '${subnet_mask}' != '${Empty}'
+    ...  Set To Dictionary  ${ipv4_info}  SubnetMask  ${subnet_mask}
+    Run Keyword If  '${gateway}' != '${Empty}'
+    ...  Set To Dictionary  ${ipv4_info}  Gateway  ${gateway}
+
+    Set List Value  ${ipv4_info_list}  ${index}  ${ipv4_info}
+
+    # Send request
+    ${data}=  Create Dictionary  IPv4Addresses=@{ipv4_info_list}
+    Redfish Patch Request  ${eth_uri}  data=${data}
+
+    Wait For Host To Ping  ${OPENBMC_HOST}  ${NETWORK_RETRY_TIME}
+    ...  ${NETWORK_TIMEOUT}
+
+    Sleep  1s  Wait for host to config settings.
 
 Verify IP On BMC
     [Documentation]  Verify IP on BMC. Exists or not exists.

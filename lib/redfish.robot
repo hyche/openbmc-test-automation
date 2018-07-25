@@ -34,6 +34,26 @@ Redfish Patch Request
     Delete All Sessions
     [Return]    ${ret}
 
+Find Property Index In List Of Dictionaries
+    [Documentation]  Find the index of a property in list of dicts.
+    ...  Return the found index if found, otherwise return the length
+    ...  of the list.
+    [Arguments]  ${key}  ${value}  @{list}
+
+    # Description of argument(s):
+    # key           The key whose index need to be found.
+    # value         The value of key to be compared.
+    # list          List of dictionaries
+    #               eg: [{...}, {...}, ...]
+
+    ${index}=  Set Variable  ${0}
+    :FOR  ${dict}  IN  @{list}
+    \  ${found_value}=  Get From Dictionary  ${dict}  ${key}
+    \  Exit For Loop If  '${value}' == '${found_value}'
+    \  ${index}=  Set Variable  ${index + 1}
+
+    [Return]  ${index}
+
 Redfish Get Property
     [Documentation]  Extract property from JSON payload which is retrieved by
     ...  GET request.
