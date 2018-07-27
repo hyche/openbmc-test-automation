@@ -192,11 +192,29 @@ Test Watchdog Off Via IPMI And Verify Using REST
     Should Be Equal  ${watchdog_state}  ${0}
     ...  msg=msg=Verification failed for watchdog off check.
 
+
 Test Watchdog Get Via IPMI
     [Documentation]  Test watchdog get via IPMI
     [Tags]  Test_Watchdog_Get_Via_IPMI
 
     Check Watchdog Get After Set Initial Countdown  ${321}
+
+
+Test Watchdog Off Via IPMI
+    [Documentation]  Test watchdog off via IPMI
+    [Tags]  Test_Watchdog_Off_Via_IPMI
+
+    # Check watchdog off result
+    ${resp} =  Run IPMI Standard Command  mc watchdog off
+    Should Contain  ${resp}  timer stopped  ignore_case=True
+    Should Not Contain  ${resp}  Failed  ignore_case=True
+    ...  msg=Command return Failed
+
+    # Verify with watchdog get
+    ${resp} =  Run IPMI Standard Command  mc watchdog get
+    ${value} =  Get Key Value From Output  ${resp}  Watchdog Timer Is
+    Should Contain  ${value}  Stopped  msg=Wrong watchdog timer state
+
 
 Test Ambient Temperature Via IPMI
     [Documentation]  Test ambient temperature via IPMI and verify using REST.
