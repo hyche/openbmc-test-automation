@@ -1,0 +1,15 @@
+###########################################################
+#                                                         #
+# This file lists out all redfish test cases              #
+# Based on Redfish Specifications and OCP profiles.       #
+#                                                         #
+###########################################################
+
+
+# EthernetInterface test cases
+-i Add_New_Valid_IPv4_And_Delete_And_Verify
+-i Change_IPv4_With_Empty_Entry_Via_Redfish_And_Verify
+-i Change_IPv4_With_Only_Address_Via_Redfish_And_Verify
+-i Delete_Non_Existing_IPv4_Via_Redfish_And_Verify
+-i Verify_Redfish_Ethernet_Interface_Fixed_Entries
+-i Verify_Redfish_Ethernet_Interface_Hostname
