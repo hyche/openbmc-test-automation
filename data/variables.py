@@ -317,3 +317,84 @@ INVENTORY_ITEMS = {
         "version",
     ],
 }
+
+# These arrays are from DMTF bundle schema: DSP8010_2018.1 Redfish Schema Bundle
+# ... which using for computer system test suite.
+
+COMPUTER_SYSTEM_ITEMS = {
+    "RESET_TYPE": [
+        "On",
+        "ForceOff",
+        "ForceOn",
+        "ForceRestart",
+        "GracefulShutdown",
+        "GracefulRestart",
+        "Nmi",
+        "PushPowerButton",
+        "PowerCycle",
+    ],
+    "SYSTEM_TYPE": [
+        "Physical",
+        "Virtual",
+        "OS",
+        "PhysicallyPartitioned",
+        "VirtuallyPartitioned",
+        "Composed",
+    ],
+    "BOOT_SOURCE": [
+        "None",
+        "Pxe",
+        "Floppy",
+        "Cd",
+        "Usb",
+        "Hdd",
+        "BiosSetup",
+        "Utilities",
+        "Diags",
+        "UefiShell",
+        "UefiTarget",
+        "SDCard",
+        "UefiHttp",
+        "RemoteDrive",
+        "UefiBootNext",
+    ],
+    "BOOT_ENABLED": [
+        "Disabled",
+        "Once",
+        "Continuous",
+    ],
+    "BOOT_MODE": [
+        "Legacy",
+        "UEFI",
+    ],
+    "INDICATOR_LED": [
+        "Unknown",
+        "Lit",
+        "Blinking",
+        "Off",
+    ],
+    "POWER_STATE": [
+        "On",
+        "Off",
+        "PoweringOn",
+        "PoweringOff",
+    ],
+    "STATE": [
+        "Enabled",
+        "Disabled",
+        "StandbyOffline",
+        "StandbySpare",
+        "InTest",
+        "Starting",
+        "Absent",
+        "UnavailableOffline",
+        "Deferring",
+        "Quiesced",
+        "Updating",
+    ],
+    "HEALTH": [
+        "OK",
+        "Warning",
+        "Critical",
+    ],
+}

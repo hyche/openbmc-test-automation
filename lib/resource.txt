@@ -86,6 +86,11 @@ Get Inventory Schema
     [Arguments]    ${machine}
     [Return]    &{INVENTORY}[${machine}]
 
+Get Computer System Items Schema
+    [Documentation]  Get computer system items schema.
+    [Arguments]    ${machine}
+    [Return]    &{COMPUTER_SYSTEM_ITEMS}[${machine}]
+
 Get Inventory Items Schema
     [Documentation]  Get inventory items schema.
     [Arguments]    ${machine}
