@@ -216,6 +216,26 @@ Test Watchdog Off Via IPMI
     Should Contain  ${value}  Stopped  msg=Wrong watchdog timer state
 
 
+Test Watchdog Reset Via IPMI
+    [Documentation]  Test watchdog reset via IPMI
+    [Tags]  Test_Watchdog_Reset_Via_IPMI
+
+    # Check watchdog reset result
+    ${resp} =  Run IPMI Standard Command  mc watchdog reset
+    Should Contain  ${resp}  countdown restarted  ignore_case=True
+    Should Not Contain  ${resp}  Failed  ignore_case=True
+    ...  msg=Command return Failed
+
+    # Wait 1 second and verify with watchdog get
+    sleep  1000ms
+    ${resp} =  Run IPMI Standard Command  mc watchdog get
+    ${value} =  Get Key Value From Output  ${resp}  Watchdog Timer Is
+    Should Contain  ${value}  Started/Running  msg=Wrong watchdog timer state
+    ${value} =  Get Key Value From Output  ${resp}  Present Countdown
+    ${value} =  Fetch From Left  ${value}  ${SPACE}
+    Should Not Be Equal As Integers  ${value}  ${0}  msg=Countdown is zero
+
+
 Test Ambient Temperature Via IPMI
     [Documentation]  Test ambient temperature via IPMI and verify using REST.
     [Tags]  Test_Ambient_Temperature_Via_IPMI

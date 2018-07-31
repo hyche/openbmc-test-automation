@@ -6,61 +6,53 @@
 ###########################################################
 
 
-#            Part 1:   IPMI CHASSIS TEST CASE             #
+# Part 1: IPMI CHASSIS TEST CASE
 
-#
-# Tag       : Get Chassis Capabilities
-# Command   : ipmitool raw 0x0 0x0
-#             ipmi-chassis --get-chassis-capabilities
-# Robot Test: N/A
-
-# Tag       : Chassis Control
-# Command   : ipmitool chassis power [off/on/cycle/reset/diag/soft]
-# Robot Test:
 -i Verify_Host_PowerOn_Via_IPMI
 -i Verify_Host_PowerOff_Via_IPMI
 -i Verify_Soft_Shutdown_via_IPMI
 -i Verify_BMC_Power_Cycle_via_IPMI
 -i IPMI_Chassis_Power_Reset
 
-# Tag       : Chassis Reset
-# Command   : N/A
-# Robot Test: ToDo - Need to implement Robot test case for this tag
-
-# Tag       : Chassis Identify
-# Command   : ipmitool chassis identify <option>
-# Robot Test:
 -i Verify_Chassis_Identify_via_IPMI
 -i Verify_Chassis_Identify_Off_And_Force_Identify_On_via_IPMI
 
-# Tag       : Set Chassis Capabilities
-# Command   : ipmitool raw 0x00 0x05 <data>
-# Robot Test: ToDo - Need to implement Robot test case for this tag
+-i IPMI_Chassis_POH
 
-# Tag       : Get POH Counter
-# Command   : ipmitool chassis poh
-# Robot Test: ToDo - Need to implement Robot test case for this tag
-
-# Tag       : Set Power Restore Policy
-# Command   : ipmitool chassis policy <list/always-on/previous/always-off>
-# Robot Test:
 -i IPMI_Chassis_Restore_Power_Policy
+-i IPMI_Chassis_Restore_Power_Policy_List
+-i IPMI_Chassis_Policy_Always_On
+-i IPMI_Chassis_Policy_Previous
+-i IPMI_Chassis_Policy_Always_Off
+-i Verify_Power_Policy_Capability_Attribute
 
-# Tag       : Get System Restart Cause
-# Command   : ipmitool chassis restart_cause
-# Robot Test: ToDo - Need to implement Robot test case for this tag
+-i IPMI_Basic_Chassis_Restart_Cause
+-i IPMI_Chassis_Restart_Cause
 
-# Tag       : Set System Boot Options
-# Command   : ipmitool chassis bootparam set <option>
-# Robot Test: ToDo - Need to implement Robot test case for this tag
-
-# Tag       : Get System Boot Options
-# Command   : ipmitool chassis bootparam get <option>
-# Robot Test: ToDo - Need to implement Robot test case for this tag
-
-# Tag       : Get Chassis Status
-# Command   : ipmitool chassis status
-#             ipmitool chassis power status
-# Robot Test:
 -i IPMI_Chassis_Status_On
 -i IPMI_Chassis_Status_Off
+
+-i IPMI_Chassis_SelfTest
+
+
+# Part 2: IPMI WATCHDOG TEST CASE
+
+-i Test_Watchdog_Get_Via_IPMI
+-i Test_Watchdog_Off_Via_IPMI
+-i Test_Watchdog_Reset_Via_IPMI
+
+
+# Part 3:   IPMI SOL TEST CASE
+
+-i Get_SOL_Payload_Status
+
+
+# Part 4:   IPMI SEL TEST CASE
+
+-i Verify_Adding_SEL_with_IPMI
+
+
+# Part 5:   IPMI EVENT TEST CASE
+
+-i Verify_Adding_Sample_Event_with_IPMI
+
