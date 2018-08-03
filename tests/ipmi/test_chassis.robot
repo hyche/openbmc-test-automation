@@ -247,4 +247,3 @@ Chassis Restart Cause Advanced Test
     ${resp}=  Run External IPMI Standard Command  chassis restart_cause
     Should Contain  ${resp}  chassis power control command
 
-

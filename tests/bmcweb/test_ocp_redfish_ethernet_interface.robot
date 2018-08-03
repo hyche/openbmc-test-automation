@@ -1,4 +1,6 @@
 *** Settings ***
+Documentation          This suite tests for OCP Redfish Ethernet interface.
+
 Resource  ../../lib/redfish.robot
 Resource  ../../lib/rest_client.robot
 Resource  ../../lib/bmc_network_utils.robot
