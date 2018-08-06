@@ -1,21 +1,20 @@
 *** Setting ***
 Documentation          This suite tests for ComputerSystem schema version 1.5.0
 
-Resource               ../../lib/redfish.robot
+Resource               ../lib/redfish_client.robot
+Resource               ../lib/rest_client.robot
+Resource               ../lib/openbmc_ffdc.robot
+Resource               ../lib/bmc_network_utils.robot
+Library                ../lib/ipmi_utils.py
 
-Resource               ../../lib/rest_client.robot
-Resource               ../../lib/openbmc_ffdc.robot
-Resource               ../../lib/bmc_network_utils.robot
-Library                ../../lib/ipmi_utils.py
-
-Force Tags             Bmcweb_Test
+Force Tags             redfish
 
 Test Setup             Test Setup Execution
 
 *** Variables ***
 
-${system_uri}      /redfish/v1/Systems/1
-${file_json}       ./tests/bmcweb/expected_json/ComputerSystem.json
+${system_uri}           Systems/1
+${file_json}            ./redfish_test/expected_json/ComputerSystem.json
 
 *** Test Cases ***
 
@@ -129,7 +128,5 @@ Test Dynamic Fields
 Test Setup Execution
     [Documentation]  Verify system node and set variale for response content.
 
-    ${resp}=  OpenBMC Get Request  ${system_uri}  timeout=10  quiet=${0}
-    Should Be Equal As Strings  ${resp.status_code}  ${HTTP_OK}
-    ${output_json}=  To JSON  ${resp.content}
+    ${output_json}=  Redfish Get Request  ${system_uri}
     Set Test Variable  ${output_json}

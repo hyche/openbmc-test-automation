@@ -1,19 +1,18 @@
 *** Settings ***
 Documentation          Test Log Entry Collection schema.
 
-Resource               ../../lib/redfish.robot
+Resource               ../lib/redfish_client.robot
 Library                OperatingSystem
 Library                Collections
-Resource               ../../lib/rest_client.robot
-Resource               ../../lib/openbmc_ffdc.robot
-Resource               ../../lib/utils.robot
+Resource               ../lib/rest_client.robot
+Resource               ../lib/openbmc_ffdc.robot
+
+Test Teardown          Test Teardown Execution
 
 *** Variables ***
 
-${entries_uri}         /redfish/v1/Systems/1/LogServices/SEL/Entries
-${service_uri}         /redfish/v1/Systems/1/LogServices
-${expected_file_path}  ./tests/bmcweb/expected_json/LogEntryCollection.json
-${service_file_path}  ./tests/bmcweb/expected_json/LogServiceCollection.json
+${entries_uri}         Systems/1/LogServices/SEL/Entries
+${expected_file_path}  ./redfish_test/expected_json/LogEntryCollection.json
 
 *** Test Cases ***
 
@@ -52,35 +51,6 @@ Verify Log Entry Collection Flexible Entries
     ...  ${output_json["Members"][${i-1}]["@odata.id"]}
     \  Should Not Be Equal As Strings  ${get_policy_id_pre}  ${get_policy_id}
 
-Test Log Service Collection
-    [Documentation]  Verify response JSON payload both all fixed and non-fixed
-    ...  for service.
-    [Tags]  Test_Log_Service_Collection
-
-    ${output_json}=    Parse Json From Response  ${service_uri}
-    ${expected_json}=  Parse Json From File  ${service_file_path}
-
-    Verify Fixed Entries Node  ${output_json}  ${expected_json}
-
-    ${no_mem}=  Collections.Get From Dictionary  ${output_json}
-    ...  Members@odata.count
-
-    # Get Length of "Members"
-    ${count}=  Get Length   ${output_json["Members"]}
-
-    # Compare between "Members@odata.count" with total "Members"
-    Should Be Equal  ${count}  ${no_mem}
-
-    ${data_id}=  Catenate   SEPARATOR=   ${service_uri}   /SEL
-
-    :FOR  ${i}  IN RANGE  ${count}
-    \  ${get_data_id}=  Get Variable Value
-    ...  ${output_json["Members"][${i}]["@odata.id"]}
-    \  Exit For Loop If  '${get_data_id}' == '${data_id}'
-    \  Run Keyword If  ${i} == ${count}   Fail
-    ...  "Test case failed with @odata.id is not exist"
-
-
 *** Keywords ***
 
 Verify Fixed Entries Node
@@ -93,25 +63,29 @@ Verify Fixed Entries Node
 
 Parse Json From Response
     [Documentation]    Convert to JSON object from body response content.
-    [Arguments]  ${uri}
+    [Arguments]  ${uri_suffix}
 
     # Description of argument(s):
-    # uri      The target URI to establish connection with
-    #          (e.g. '/redfish/v1').
+    # uri_suffix      The target URI to establish connection with
+    #                 (e.g. 'Systems').
 
-    ${resp}=          OpenBMC Get Request  ${uri}
-    ${json}=          To JSON  ${resp.content}
+    ${json}=          Redfish Get Request  ${uri_suffix}
     [Return]          ${json}
 
 Check Response Status
     [Documentation]  Execute get and check reponse status from a uri.
-    [Arguments]  ${uri}  ${expected_status}
+    [Arguments]  ${uri_suffix}  ${expected_status}
 
     # Description of argument(s):
-    # uri               The target URI to establish connection with
-    #                   (e.g. '/redfish/v1').
+    # uri_suffix      The target URI to establish connection with
+    #                 (e.g. 'Systems').
     # expected_status   Expected response status.
 
-    ${resp}=          OpenBMC Get Request  ${uri}
-    Should Be Equal As Strings  ${resp.status_code}  ${expected_status}
+    ${resp}=          Redfish Get Request  ${uri_suffix}
 
+Test Teardown Execution
+    [Documentation]    Log FFDC if test failed.
+
+    FFDC On Test Case Fail
+    ${sol_log}=    Stop SOL Console Logging
+    Log   ${sol_log}

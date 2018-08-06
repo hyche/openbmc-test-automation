@@ -3,15 +3,16 @@ Documentation          Test LogService System Event Log (SEL).
 
 Library                OperatingSystem
 Library                Collections
-Resource               ../../lib/rest_client.robot
-Resource               ../../lib/openbmc_ffdc.robot
+Resource               ../lib/redfish_client.robot
+Resource               ../lib/rest_client.robot
+Resource               ../lib/openbmc_ffdc.robot
 
 Test Setup             Test Setup Execution
 
 *** Variables ***
 
-${SEL_uri}         /redfish/v1/Systems/1/LogServices/SEL
-${expected_file_path}  ./tests/bmcweb/expected_json/LogServiceSEL.json
+${SEL_uri}         Systems/1/LogServices/SEL
+${expected_file_path}  ./redfish_test/expected_json/LogServiceSEL.json
 
 *** Test Cases ***
 
@@ -59,9 +60,7 @@ Test Log Service SEL Get Flexible Entries
 Test Setup Execution
     [Documentation]  Setup and Get data from uri.
 
-    ${resp}=  OpenBMC Get Request  ${SEL_uri}  timeout=10  quiet=${0}
-    Should Be Equal As Strings  ${resp.status_code}  ${HTTP_OK}
-    ${logS_info}=  To Json  ${resp.content}
+    ${logS_info}=  Redfish Get Request  ${SEL_uri}
     Set Test Variable  ${logS_info}
 
 Parse Json From File

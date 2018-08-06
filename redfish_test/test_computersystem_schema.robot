@@ -1,8 +1,8 @@
 *** Settings ***
 Documentation          This suite tests for ComputerSystem schema version 1.5.0
 
-Resource               ../../lib/rest_client.robot
-Resource               ../../lib/openbmc_ffdc.robot
+Resource               ../lib/rest_client.robot
+Resource               ../lib/openbmc_ffdc.robot
 
 Test Teardown          Test Teardown Execution
 

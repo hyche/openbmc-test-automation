@@ -1,19 +1,17 @@
 *** Settings ***
 Documentation          This suite tests for OCP Redfish Ethernet interface.
 
-Resource  ../../lib/redfish.robot
-Resource  ../../lib/rest_client.robot
-Resource  ../../lib/bmc_network_utils.robot
-Resource  ../../lib/openbmc_ffdc.robot
+Resource  ../lib/redfish_client.robot
+Resource  ../lib/rest_client.robot
+Resource  ../lib/bmc_network_utils.robot
 
-Force Tags  Bmcweb_Test
+Force Tags  redfish
 
 Test Setup     Test Setup Execution
 
 *** Variables ***
 ${eth_id}                   eth0
-${eth_uri}                  SEPARATOR=${Empty}  ${REDFISH_MANAGERS_URI}  bmc/
-...                         EthernetInterfaces/  ${eth_id}
+${eth_uri}                  Managers/bmc/EthernetInterfaces/${eth_id}
 ${valid_ipv4}               10.38.15.201
 ${valid_ipv4_2}             10.38.15.202
 ${valid_ipv4_subnet_mask}   255.255.252.0
@@ -39,7 +37,7 @@ Verify Redfish Ethernet Interface Fixed Entries
     [Template]  Verify Redfish Fixed Entries
 
     # Test Entries      # JSON file path
-    ${ethernet_info}   ./tests/bmcweb/expected_json/EthernetInterface.json
+    ${ethernet_info}   ./redfish_test/expected_json/EthernetInterface.json
 
 Add New Valid IPv4 And Delete And Verify
     [Documentation]  Create new IPv4 and verify.
@@ -124,16 +122,13 @@ Add New IPv4 Via Redfish
     #                      }, {...}, ...]
 
     ${created_ipv4}=  Create Dictionary
-    Run Keyword If  '${empty}' == '${False}'  Set To Dictionary  ${created_ipv4}
-    ...  Address=${ipv4_addr}  SubnetMask=${subnet_mask}  Gateway=${gateway}
+    Run Keyword If  '${empty}' == '${False}'  Set To Dictionary
+    ...  ${created_ipv4}  Address=${ipv4_addr}  SubnetMask=${subnet_mask}
+    ...  Gateway=${gateway}
     Append To List  ${ipv4_info_list}  ${created_ipv4}
     ${data}=  Create Dictionary  IPv4Addresses=@{ipv4_info_list}
     Redfish Patch Request  ${eth_uri}  data=${data}
-
-    Wait For Host To Ping  ${OPENBMC_HOST}  ${NETWORK_RETRY_TIME}
-    ...  ${NETWORK_TIMEOUT}
-
-    Sleep  1s  Wait for host to config settings
+    Wait For Network Configuration
 
 Delete IP Via Redfish Given Index
     [Documentation]  Delete the IP via redfish with known index.
@@ -159,11 +154,7 @@ Delete IP Via Redfish Given Index
     ${key}=  Catenate  SEPARATOR=${Empty}  IPv  ${type}  Addresses
     ${data}=  Create Dictionary  ${key}=@{ip_info_list}
     Redfish Patch Request  ${eth_uri}  data=${data}
-
-    Wait For Host To Ping  ${OPENBMC_HOST}  ${NETWORK_RETRY_TIME}
-    ...  ${NETWORK_TIMEOUT}
-
-    Sleep  1s  Wait for host to config settings.
+    Wait For Network Configuration
 
 Delete IP Via Redfish Given Address
     [Documentation]  Delete the IP via redfish with known address
@@ -223,11 +214,18 @@ Change IPv4 Via Redfish
     # Send request
     ${data}=  Create Dictionary  IPv4Addresses=@{ipv4_info_list}
     Redfish Patch Request  ${eth_uri}  data=${data}
+    Wait For Network Configuration
+
+Wait For Network Configuration
+    [Documentation]  Wait for configuration of network (eg. delete, create ip)
+    [Arguments]  ${config_time}=2s
+
+    # Description of argument(s):
+    # config_time     Time to wait for configuration.
 
     Wait For Host To Ping  ${OPENBMC_HOST}  ${NETWORK_RETRY_TIME}
     ...  ${NETWORK_TIMEOUT}
-
-    Sleep  1s  Wait for host to config settings.
+    Sleep  ${config_time}  Wait for host to config settings.
 
 Verify IP On BMC
     [Documentation]  Verify IP on BMC. Exists or not exists.
@@ -252,7 +250,5 @@ Verify IP On BMC
 Test Setup Execution
     [Documentation]  Do the pre test setup.
 
-    ${resp}=  OpenBMC Get Request  ${eth_uri}  timeout=10  quiet=${0}
-    Should Be Equal As Strings  ${resp.status_code}  ${HTTP_OK}
-    ${ethernet_info}=  To Json  ${resp.content}
+    ${ethernet_info}=  Redfish Get Request  ${eth_uri}
     Set Test Variable  ${ethernet_info}
