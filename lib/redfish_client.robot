@@ -30,7 +30,7 @@ Redfish Login Request
     #                   This defaults to "openbmc"
     # timeout           REST login attempt time out.
 
-    Create Session  openbmc  ${AUTH_URI}  timeout=${timeout}
+    Create Session  openbmc  ${REDFISH_AUTH_URI}  timeout=${timeout}
     ${headers}=  Create Dictionary  Content-Type=application/json
 
     ${data}=  Create Dictionary

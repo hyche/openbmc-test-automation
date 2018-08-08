@@ -13,6 +13,7 @@ ${DBUS_PREFIX}    ${EMPTY}
 ${PORT}           ${EMPTY}
 # AUTH_SUFFIX here is derived from variables.py
 ${AUTH_URI}       https://${OPENBMC_HOST}${AUTH_SUFFIX}
+${REDFISH_AUTH_URI}    https://${OPENBMC_HOST}:%{REDFISH_HTTPS_PORT}
 ${OPENBMC_USERNAME}    root
 ${OPENBMC_PASSWORD}    0penBmc
 ${IPMI_PASSWORD}       0penBmc
