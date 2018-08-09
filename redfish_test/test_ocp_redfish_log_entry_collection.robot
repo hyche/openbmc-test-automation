@@ -7,6 +7,7 @@ Library                Collections
 Resource               ../lib/rest_client.robot
 Resource               ../lib/openbmc_ffdc.robot
 
+Test Setup             Test Setup Execution
 Test Teardown          Test Teardown Execution
 
 *** Variables ***
@@ -69,7 +70,8 @@ Parse Json From Response
     # uri_suffix      The target URI to establish connection with
     #                 (e.g. 'Systems').
 
-    ${json}=          Redfish Get Request  ${uri_suffix}
+    ${json}=          Redfish Get Request  ${uri_suffix}  ${session_id}
+    ...               ${auth_token}
     [Return]          ${json}
 
 Check Response Status
@@ -81,10 +83,23 @@ Check Response Status
     #                 (e.g. 'Systems').
     # expected_status   Expected response status.
 
-    ${resp}=          Redfish Get Request  ${uri_suffix}
+    ${resp}=          Redfish Get Request  ${uri_suffix}  ${session_id}
+    ...               ${auth_token}
+
+Test Setup Execution
+    [Documentation]  Do the pre test setup.
+
+    ${session_id}  ${auth_token} =  Redfish Login Request
+    Set Test Variable  ${session_id}
+    Set Test Variable  ${auth_token}
 
 Test Teardown Execution
-    [Documentation]    Log FFDC if test failed.
+    [Documentation]  Do the test teardown.
+
+    ${session_uri} =
+    ...  Catenate  SEPARATOR=  ${REDFISH_SESSION_URI}  ${session_id}
+
+    Redfish Delete Request  ${session_uri}  ${auth_token}
 
     FFDC On Test Case Fail
     ${sol_log}=    Stop SOL Console Logging

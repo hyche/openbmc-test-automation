@@ -8,6 +8,9 @@ Resource               ../lib/rest_client.robot
 Resource               ../lib/openbmc_ffdc.robot
 Resource               ../lib/utils.robot
 
+Test Setup             Test Setup Execution
+Test Teardown          Test Teardown Execution
+
 *** Variables ***
 
 ${entries_uri}         Systems/1/LogServices/SEL/Entries
@@ -99,5 +102,20 @@ Parse Json From Response
     # uri      The target URI to establish connection with
     #          (e.g. '/redfish/v1').
 
-    ${json}=          Redfish Get Request  ${uri}
+    ${json}=          Redfish Get Request  ${uri}  ${session_id}  ${auth_token}
     [Return]          ${json}
+
+Test Setup Execution
+    [Documentation]  Do the pre test setup.
+
+    ${session_id}  ${auth_token} =  Redfish Login Request
+    Set Test Variable  ${session_id}
+    Set Test Variable  ${auth_token}
+
+Test Teardown Execution
+    [Documentation]  Do the test teardown.
+
+    ${session_uri} =
+    ...  Catenate  SEPARATOR=  ${REDFISH_SESSION_URI}  ${session_id}
+
+    Redfish Delete Request  ${session_uri}  ${auth_token}

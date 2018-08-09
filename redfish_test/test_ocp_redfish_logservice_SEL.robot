@@ -8,6 +8,7 @@ Resource               ../lib/rest_client.robot
 Resource               ../lib/openbmc_ffdc.robot
 
 Test Setup             Test Setup Execution
+Test Teardown          Test Teardown Execution
 
 *** Variables ***
 
@@ -57,12 +58,6 @@ Test Log Service SEL Get Flexible Entries
 
 *** Keywords ***
 
-Test Setup Execution
-    [Documentation]  Setup and Get data from uri.
-
-    ${logS_info}=  Redfish Get Request  ${SEL_uri}
-    Set Test Variable  ${logS_info}
-
 Parse Json From File
     [Documentation]    Read expected JSON file then convert to JSON object.
     [Arguments]  ${json_file_path}
@@ -83,3 +78,21 @@ Verify Fixed Entries Node
     ...  msg=Entries not match from expected JSON
     Log  "STEP: Verify Fixed Entries Node"
 
+Test Setup Execution
+    [Documentation]  Do the pre test setup.
+
+    ${session_id}  ${auth_token} =  Redfish Login Request
+    Set Test Variable  ${session_id}
+    Set Test Variable  ${auth_token}
+
+    ${logS_info}=  Redfish Get Request  ${SEL_uri}  ${session_id}
+    ...  ${auth_token}
+    Set Test Variable  ${logS_info}
+
+Test Teardown Execution
+    [Documentation]  Do the test teardown.
+
+    ${session_uri} =
+    ...  Catenate  SEPARATOR=  ${REDFISH_SESSION_URI}  ${session_id}
+
+    Redfish Delete Request  ${session_uri}  ${auth_token}

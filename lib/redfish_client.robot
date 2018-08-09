@@ -122,7 +122,7 @@ Redfish Delete Request
 Redfish Patch Request
     [Documentation]  Do REST PATCH request and return the result.
     [Arguments]  ${uri_suffix}
-    ...          ${xauth_token}=${None}
+    ...          ${xauth_token}
     ...          ${timeout}=10
     ...          &{kwargs}
 
@@ -135,15 +135,11 @@ Redfish Patch Request
     #                 set kwargs as follows:
     #                 ${kwargs}=  Create Dictionary  allow_redirect=${True}.
 
-    ${session_id}  ${xauth_token}=  Run Keyword If  ${xauth_token} == ${None}
-    ...  Redfish Login Request
-
     ${base_uri}=  Catenate  SEPARATOR=  ${REDFISH_BASE_URI}  ${uri_suffix}
     ${headers}=     Create Dictionary   Content-Type=application/json
     ...  X-Auth-Token=${xauth_token}
     Set To Dictionary   ${kwargs}       headers     ${headers}
     ${resp}=  Patch Request  openbmc  ${base_uri}  &{kwargs}  timeout=${timeout}
-    Delete All Sessions
 
     [Return]   ${resp}
 
@@ -151,7 +147,7 @@ Redfish Patch Request
 Redfish Post Request
     [Documentation]  Do REST POST request and return the result.
     [Arguments]  ${uri_suffix}
-    ...          ${xauth_token}=${None}
+    ...          ${xauth_token}
     ...          ${timeout}=10
     ...          &{kwargs}
 
@@ -164,15 +160,11 @@ Redfish Post Request
     #                 set kwargs as follows:
     #                 ${kwargs}=  Create Dictionary  allow_redirect=${True}.
 
-    ${session_id}  ${xauth_token}=  Run Keyword If  ${xauth_token} == ${None}
-    ...  Redfish Login Request
-
     ${base_uri}=  Catenate  SEPARATOR=  ${REDFISH_BASE_URI}  ${uri_suffix}
     ${headers}=     Create Dictionary   Content-Type=application/json
     ...  X-Auth-Token=${xauth_token}
     Set To Dictionary   ${kwargs}       headers     ${headers}
     ${resp}=  Post Request  openbmc  ${base_uri}  &{kwargs}  timeout=${timeout}
-    Delete All Sessions
 
     [Return]   ${resp}
 
@@ -204,13 +196,15 @@ Redfish Get Property
     ...  GET request.
     [Arguments]  ${uri_suffix}
     ...          ${property}
+    ...          ${xauth_token}
 
     # Description of argument(s):
     # uri_suffix        The URI to establish connection with (e.g. 'Systems').
     # property          Name of the property.
+    # xauth_token       Authentication token.
 
     Should Be String  ${property}
-    ${content}=  Redfish Get Request  ${uri_suffix}
+    ${content}=  Redfish Get Request  ${uri_suffix}  ${None}  ${xauth_token}
     [Return]  ${content['${property}']}
 
 

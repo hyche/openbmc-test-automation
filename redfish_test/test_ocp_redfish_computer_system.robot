@@ -10,6 +10,7 @@ Library                ../lib/ipmi_utils.py
 Force Tags             redfish
 
 Test Setup             Test Setup Execution
+Test Teardown          Test Teardown Execution
 
 *** Variables ***
 
@@ -126,7 +127,21 @@ Test Dynamic Fields
     Should Contain  ${expected_value}  ${output_value}
 
 Test Setup Execution
-    [Documentation]  Verify system node and set variale for response content.
+    [Documentation]  Do the pre test setup.
 
-    ${output_json}=  Redfish Get Request  ${system_uri}
+    ${session_id}  ${auth_token} =  Redfish Login Request
+    Set Test Variable  ${session_id}
+    Set Test Variable  ${auth_token}
+
+    ${output_json}=  Redfish Get Request  ${system_uri}  ${session_id}
+    ...  ${auth_token}
     Set Test Variable  ${output_json}
+
+
+Test Teardown Execution
+    [Documentation]  Do the test teardown.
+
+    ${session_uri} =
+    ...  Catenate  SEPARATOR=  ${REDFISH_SESSION_URI}  ${session_id}
+
+    Redfish Delete Request  ${session_uri}  ${auth_token}

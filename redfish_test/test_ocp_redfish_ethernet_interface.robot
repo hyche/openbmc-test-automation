@@ -8,6 +8,7 @@ Resource  ../lib/bmc_network_utils.robot
 Force Tags  redfish
 
 Test Setup     Test Setup Execution
+Test TearDown  Test Teardown Execution
 
 *** Variables ***
 ${eth_id}                   eth0
@@ -49,6 +50,7 @@ Add New Valid IPv4 And Delete And Verify
     Verify IP On BMC  ${valid_ipv4}  valid  # Verify added IPv4
 
     ${ipv4_info_list}=  Redfish Get Property  ${eth_uri}  IPv4Addresses
+    ...  ${auth_token}
     Delete IP Via Redfish Given Address  4  ${valid_ipv4}  @{ipv4_info_list}
     Verify IP On BMC  ${valid_ipv4}  error  # Verify deleted IPv4
 
@@ -62,6 +64,7 @@ Delete Non Existing IPv4 Via Redfish And Verify
     Delete IP Via Redfish Given Index  4  99  @{ipv4_info_list}
 
     ${ipv4_info_list_after}=  Redfish Get Property  ${eth_uri}  IPv4Addresses
+    ...  ${auth_token}
     Lists Should Be Equal  ${ipv4_info_list}  ${ipv4_info_list_after}
 
 Change IPv4 With Empty Entry Via Redfish And Verify
@@ -75,6 +78,7 @@ Change IPv4 With Empty Entry Via Redfish And Verify
     Verify IP On BMC  ${valid_ipv4}  valid    # Verify added IPv4
 
     ${ipv4_info_list}=  Redfish Get Property  ${eth_uri}  IPv4Addresses
+    ...  ${auth_token}
     Change IPv4 Via Redfish  ${valid_ipv4}  ${Empty}  ${Empty}  ${Empty}
     ...  @{ipv4_info_list}
     Verify IP On BMC  ${valid_ipv4}  valid    # verify unchanged IPv4
@@ -93,12 +97,14 @@ Change IPv4 With Only Address Via Redfish And Verify
     Verify IP On BMC  ${valid_ipv4}  valid    # Verify added IPv4
 
     ${ipv4_info_list}=  Redfish Get Property  ${eth_uri}  IPv4Addresses
+    ...  ${auth_token}
     Change IPv4 Via Redfish  ${valid_ipv4}  ${valid_ipv4_2}  ${Empty}  ${Empty}
     ...  @{ipv4_info_list}
     Verify IP On BMC  ${valid_ipv4}  error    # Verify deleted old IPv4
     Verify IP On BMC  ${valid_ipv4_2}  valid  # Verify changed IPv4
 
     ${ipv4_info_list}=  Redfish Get Property  ${eth_uri}  IPv4Addresses
+    ...  ${auth_token}
     Delete IP Via Redfish Given Address  4  ${valid_ipv4_2}  @{ipv4_info_list}
     Verify IP On BMC  ${valid_ipv4_2}  error  # Verify deleted IPv4
 
@@ -127,7 +133,7 @@ Add New IPv4 Via Redfish
     ...  Gateway=${gateway}
     Append To List  ${ipv4_info_list}  ${created_ipv4}
     ${data}=  Create Dictionary  IPv4Addresses=@{ipv4_info_list}
-    Redfish Patch Request  ${eth_uri}  data=${data}
+    Redfish Patch Request  ${eth_uri}  ${auth_token}  data=${data}
     Wait For Network Configuration
 
 Delete IP Via Redfish Given Index
@@ -153,7 +159,7 @@ Delete IP Via Redfish Given Index
 
     ${key}=  Catenate  SEPARATOR=${Empty}  IPv  ${type}  Addresses
     ${data}=  Create Dictionary  ${key}=@{ip_info_list}
-    Redfish Patch Request  ${eth_uri}  data=${data}
+    Redfish Patch Request  ${eth_uri}  ${auth_token}  data=${data}
     Wait For Network Configuration
 
 Delete IP Via Redfish Given Address
@@ -213,7 +219,7 @@ Change IPv4 Via Redfish
 
     # Send request
     ${data}=  Create Dictionary  IPv4Addresses=@{ipv4_info_list}
-    Redfish Patch Request  ${eth_uri}  data=${data}
+    Redfish Patch Request  ${eth_uri}  ${auth_token}  data=${data}
     Wait For Network Configuration
 
 Wait For Network Configuration
@@ -250,5 +256,18 @@ Verify IP On BMC
 Test Setup Execution
     [Documentation]  Do the pre test setup.
 
-    ${ethernet_info}=  Redfish Get Request  ${eth_uri}
+    ${session_id}  ${auth_token} =  Redfish Login Request
+    Set Test Variable  ${session_id}
+    Set Test Variable  ${auth_token}
+
+    ${ethernet_info}=  Redfish Get Request  ${eth_uri}  ${session_id}
+    ...  ${auth_token}
     Set Test Variable  ${ethernet_info}
+
+Test Teardown Execution
+    [Documentation]  Do the test teardown.
+
+    ${session_uri} =
+    ...  Catenate  SEPARATOR=  ${REDFISH_SESSION_URI}  ${session_id}
+
+    Redfish Delete Request  ${session_uri}  ${auth_token}

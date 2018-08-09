@@ -5,6 +5,7 @@ Resource               ../lib/redfish_client.robot
 Resource               ../lib/rest_client.robot
 Resource               ../lib/openbmc_ffdc.robot
 
+Test Setup             Test Setup Execution
 Test Teardown          Test Teardown Execution
 
 *** Variables ***
@@ -38,7 +39,8 @@ Get Uri Node
     # Description of argument:
     # uri_suffix        The URI to establish connection with (e.g. 'Systems').
 
-    ${resp}=           Redfish Get Request  ${uri_suffix}
+    ${resp}=           Redfish Get Request  ${uri_suffix}  ${session_id}
+    ...  ${auth_token}
     [Return]           ${resp}
 
 Get From Response
@@ -47,8 +49,19 @@ Get From Response
     ${json}=          Get Uri Node  ${systems_uri}
     [Return]          ${json}
 
+Test Setup Execution
+    [Documentation]  Do the pre test setup.
+
+    ${session_id}  ${auth_token} =  Redfish Login Request
+    Set Test Variable  ${session_id}
+    Set Test Variable  ${auth_token}
+
 Test Teardown Execution
     [Documentation]    Log FFDC if test failed.
 
-    FFDC On Test Case Fail
+    ${session_uri} =
+    ...  Catenate  SEPARATOR=  ${REDFISH_SESSION_URI}  ${session_id}
 
+    Redfish Delete Request  ${session_uri}  ${auth_token}
+
+    FFDC On Test Case Fail
