@@ -122,10 +122,9 @@ Redfish Delete Request
 Redfish Patch Request
     [Documentation]  Do REST PATCH request and return the result. Same
     ...  functionality with OpenBMC request but different authentication.
-    # Example result data:
-    # <Response [200]>
     [Arguments]    ${uri_suffix}  ${session_id}=${None}  ${xauth_token}=${None}
     ...            ${timeout}=10  &{kwargs}
+
     # Description of argument(s):
     # uri_suffix      The URI to establish connection with (e.g. 'Systems').
     # session_id      Session id.
@@ -144,6 +143,34 @@ Redfish Patch Request
     ...  X-Auth-Token=${xauth_token}
     Set To Dictionary   ${kwargs}       headers     ${headers}
     ${resp}=  Patch Request  openbmc  ${base_uri}  &{kwargs}  timeout=${timeout}
+    Delete All Sessions
+    [Return]   ${resp}
+
+
+Redfish Post Request
+    [Documentation]  Do REST POST request and return the result. Same
+    ...  functionality with OpenBMC request but different authentication.
+    [Arguments]    ${uri_suffix}  ${session_id}=${None}  ${xauth_token}=${None}
+    ...            ${timeout}=10  &{kwargs}
+
+    # Description of argument(s):
+    # uri_suffix      The URI to establish connection with (e.g. 'Systems').
+    # session_id      Session id.
+    # xauth_token     Authentication token.
+    # timeout         Timeout in seconds to establish connection with URI.
+    # kwargs          Any additional arguments to be passed directly to the
+    #                 Post Request call. For example, the caller might
+    #                 set kwargs as follows:
+    #                 ${kwargs}=  Create Dictionary  allow_redirect=${True}.
+
+    ${session_id}  ${xauth_token}=  Run Keyword If  ${xauth_token} == ${None}
+    ...  Redfish Login Request
+
+    ${base_uri}=  Catenate  SEPARATOR=  ${REDFISH_BASE_URI}  ${uri_suffix}
+    ${headers}=     Create Dictionary   Content-Type=application/json
+    ...  X-Auth-Token=${xauth_token}
+    Set To Dictionary   ${kwargs}       headers     ${headers}
+    ${resp}=  Post Request  openbmc  ${base_uri}  &{kwargs}  timeout=${timeout}
     Delete All Sessions
     [Return]   ${resp}
 
