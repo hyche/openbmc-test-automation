@@ -120,14 +120,14 @@ Redfish Delete Request
 
 
 Redfish Patch Request
-    [Documentation]  Do REST PATCH request and return the result. Same
-    ...  functionality with OpenBMC request but different authentication.
-    [Arguments]    ${uri_suffix}  ${session_id}=${None}  ${xauth_token}=${None}
-    ...            ${timeout}=10  &{kwargs}
+    [Documentation]  Do REST PATCH request and return the result.
+    [Arguments]  ${uri_suffix}
+    ...          ${xauth_token}=${None}
+    ...          ${timeout}=10
+    ...          &{kwargs}
 
     # Description of argument(s):
     # uri_suffix      The URI to establish connection with (e.g. 'Systems').
-    # session_id      Session id.
     # xauth_token     Authentication token.
     # timeout         Timeout in seconds to establish connection with URI.
     # kwargs          Any additional arguments to be passed directly to the
@@ -144,18 +144,19 @@ Redfish Patch Request
     Set To Dictionary   ${kwargs}       headers     ${headers}
     ${resp}=  Patch Request  openbmc  ${base_uri}  &{kwargs}  timeout=${timeout}
     Delete All Sessions
+
     [Return]   ${resp}
 
 
 Redfish Post Request
-    [Documentation]  Do REST POST request and return the result. Same
-    ...  functionality with OpenBMC request but different authentication.
-    [Arguments]    ${uri_suffix}  ${session_id}=${None}  ${xauth_token}=${None}
-    ...            ${timeout}=10  &{kwargs}
+    [Documentation]  Do REST POST request and return the result.
+    [Arguments]  ${uri_suffix}
+    ...          ${xauth_token}=${None}
+    ...          ${timeout}=10
+    ...          &{kwargs}
 
     # Description of argument(s):
     # uri_suffix      The URI to establish connection with (e.g. 'Systems').
-    # session_id      Session id.
     # xauth_token     Authentication token.
     # timeout         Timeout in seconds to establish connection with URI.
     # kwargs          Any additional arguments to be passed directly to the
@@ -172,14 +173,16 @@ Redfish Post Request
     Set To Dictionary   ${kwargs}       headers     ${headers}
     ${resp}=  Post Request  openbmc  ${base_uri}  &{kwargs}  timeout=${timeout}
     Delete All Sessions
+
     [Return]   ${resp}
 
 
 Find Property Index In List Of Dictionaries
-    [Documentation]  Find the index of a property in list of dicts.
-    ...  Return the found index if found, otherwise return the length
-    ...  of the list.
-    [Arguments]  ${key}  ${value}  @{list}
+    [Documentation]  Find the index of a property in list of dicts.  Return
+    ...  the found index if found, otherwise return the length of the list.
+    [Arguments]  ${key}
+    ...          ${value}
+    ...          @{list}
 
     # Description of argument(s):
     # key           The key whose index need to be found.
@@ -199,11 +202,12 @@ Find Property Index In List Of Dictionaries
 Redfish Get Property
     [Documentation]  Extract property from JSON payload which is retrieved by
     ...  GET request.
-    [Arguments]  ${uri_suffix}  ${property}
+    [Arguments]  ${uri_suffix}
+    ...          ${property}
+
     # Description of argument(s):
     # uri_suffix        The URI to establish connection with (e.g. 'Systems').
     # property          Name of the property.
-    # timeout           Timeout for the REST call.
 
     Should Be String  ${property}
     ${content}=  Redfish Get Request  ${uri_suffix}
@@ -226,7 +230,8 @@ Parse Json From File
 Verify Redfish Fixed Entries
     [Documentation]  Verify all the fixed entries got from GET request to
     ...  bmcweb are correct (Based on DSP2049).
-    [Arguments]  ${test_entries}  ${json_file_path}
+    [Arguments]  ${test_entries}
+    ...          ${json_file_path}
 
     # Description of argument(s):
     # json_file_path    Path of target json file
