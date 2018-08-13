@@ -50,7 +50,27 @@ Verify IMPI User Enable Command
 
     Verify Enable Command Functional   user list
 
+Verify IMPI User Disable Command
+    [Documentation]  Verify IPMI user disable command
+    [Tags]  Verify_IPMI_User_Disable_Command
+    [Setup]  Test Setup For User Disable Command
+    [Teardown]  Test Teardown For User Disable Command
+
+    Verify Disable Command Valid
+
+    Verify Disable Command Functional   user list
+
 *** Keywords ***
+
+Test Setup For User Disable Command
+    [Documentation]  Do test case setup for user disable command.
+    Log To Console  "Test Setup For User Disable Command"
+    # Set user with default status is enable
+    Run Keyword And Ignore Error  Run External IPMI Standard Command
+    ...  channel setaccess 1 ${user_id} link=on ipmi=on callin=on privilege=4
+
+    Run Keyword And Ignore Error  Run External IPMI Standard Command
+    ...  user enable ${user_id}
 
 Set User Password
     [Documentation]  Setting password from other, default is password of OBMC
@@ -173,6 +193,29 @@ Verify Enable Command Functional
     @{word}=  Split String  ${resp}
     Should Be Equal  @{word}[1]  ${user_name}
 
+Verify Disable Command Valid
+    [Documentation]  Verify user disable command is valid
+
+    # Disable user id
+    ${error}  ${data_resp}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Standard Command   user disable ${user_id}
+
+    # Check command is valid or not
+    Should Not Contain  ${data_resp}    Invalid command
+    Should Not Contain  ${data_resp}    Unspecified error
+
+Verify Disable Command Functional
+    [Documentation]  Verify user disable command functional
+    [Arguments]  ${command}
+
+    # Check if user is disable
+    ${error}  ${data_resp}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Manual Command
+    ...  ${user_name}  ${user_password}  ${command}
+
+    Run Keyword If  '${error}' != 'FAIL'  Fail
+    Should Contain  ${data_resp}    Unable to establish IPMI
+
 Test Teardown For Set Password Command
     [Documentation]  Test Teardown For Set Password Command
 
@@ -193,6 +236,15 @@ Test Teardown For User Enable Command
 
     # Restore user to original status
     Run Keyword And Ignore Error  Run External IPMI Standard Command
+    ...  user enable ${user_id}
+
+    FFDC On Test Case Fail
+
+Test Teardown For User Disable Command
+    [Documentation]  Collect FFDC and Restore System
+
+    # Restore user to default created status.
+    Run Keyword And Ignore Error  Run External IPMI Standard Comman
     ...  user enable ${user_id}
 
     FFDC On Test Case Fail
