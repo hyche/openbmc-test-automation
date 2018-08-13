@@ -64,3 +64,4 @@
 
 -i Verify_IPMI_User_Set_Password
 -i Verify_IPMI_User_Set_Name_Command
+-i Verify_IPMI_User_Enable_Command

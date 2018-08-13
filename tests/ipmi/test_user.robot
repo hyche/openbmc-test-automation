@@ -40,6 +40,16 @@ Verify IMPI User Set Name Command
 
     Verify Set Name Command Functional
 
+Verify IMPI User Enable Command
+    [Documentation]  Verify ipmi enable command
+    [Tags]  Verify_IPMI_User_Enable_Command
+    [Setup]  Test Setup For User Enable Command
+    [Teardown]  Test Teardown For User Enable Command
+
+    Verify Enable Command Valid
+
+    Verify Enable Command Functional   user list
+
 *** Keywords ***
 
 Set User Password
@@ -50,6 +60,18 @@ Set User Password
     ...  Run External IPMI Standard Command
     ...  user set password ${user_id} ${password}
     Set Test Variable  ${data_resp}
+
+Test Setup For User Enable Command
+    [Documentation]  Do test case setup for user enable command.
+    Log To Console  "Test Setup For Enable testcase"
+    # Set user with default status is disable
+    ${error}  ${data_resp}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Standard Command
+    ...  channel setaccess 1 ${user_id} link=on ipmi=on callin=on privilege=4
+
+    ${error}  ${data_resp}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Standard Command
+    ...  user disable ${user_id}
 
 Verify Password Setting Is Valid
     [Documentation]  Verify the password setting is success
@@ -127,6 +149,30 @@ Verify Set Name Command Functional
     Should Be Equal  @{word}[0]  ${user_id}
     Should Be Equal  @{word}[1]  ${name_test}
 
+Verify Enable Command Valid
+    [Documentation]  Verify user enable command is valid
+
+    # Enable user ID
+    ${error}  ${data_resp}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Standard Command   user enable ${user_id}
+
+    # Check command is valid or not
+    Should Not Contain  ${data_resp}    Invalid command
+    Should Not Contain  ${data_resp}    Unspecified error
+
+Verify Enable Command Functional
+    [Documentation]  Verify user enable command functional
+    [Arguments]   ${command}
+
+    # Check if user is enabled
+    ${error}  ${data_resp}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Manual Command
+    ...  ${user_name}  ${user_password}  ${command}
+
+    ${resp}=  Get Lines Containing String  ${data_resp}  ${user_name}
+    @{word}=  Split String  ${resp}
+    Should Be Equal  @{word}[1]  ${user_name}
+
 Test Teardown For Set Password Command
     [Documentation]  Test Teardown For Set Password Command
 
@@ -139,5 +185,14 @@ Test Teardown For User Set Name Command
     # Rename the user to original
     Run Keyword And Ignore Error  Run External IPMI Standard Command
     ...  user set name ${user_id} ${user_name}
+
+    FFDC On Test Case Fail
+
+Test Teardown For User Enable Command
+    [Documentation]  Collect FFDC and Recover system
+
+    # Restore user to original status
+    Run Keyword And Ignore Error  Run External IPMI Standard Command
+    ...  user enable ${user_id}
 
     FFDC On Test Case Fail

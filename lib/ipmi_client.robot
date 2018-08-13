@@ -19,6 +19,7 @@ ${IPMI_EXT_CMD}=       ipmitool -I lanplus -C ${IPMI_CIPHER_LEVEL}
 ${IPMI_USER_OPTIONS}   ${EMPTY}
 ${IPMI_INBAND_CMD}=    ipmitool -C ${IPMI_CIPHER_LEVEL}
 ${HOST}=               -H
+${USER}=               -U
 ${RAW}=                raw
 
 *** Keywords ***
@@ -126,6 +127,24 @@ Run External IPMI Standard Command
 
     ${ipmi_cmd}=  Catenate  SEPARATOR=
     ...  ${IPMI_EXT_CMD} ${IPMI_USER_OPTIONS} -P${SPACE}${IPMI_PASSWORD}
+    ...  ${SPACE}${HOST}${SPACE}${OPENBMC_HOST}${SPACE}${args}
+    ${rc}  ${output}=  Run And Return RC and Output  ${ipmi_cmd}
+    Return From Keyword If  ${fail_on_err} == ${0}  ${output}
+    Should Be Equal  ${rc}  ${0}  msg=${output}
+    [Return]  ${output}
+
+Run External IPMI Manual Command
+    [Documentation]  Run the manual IPMI command.
+    [Arguments]  ${user_name}  ${passwd}  ${args}  ${fail_on_err}=${1}
+
+    # Description of argument(s):
+    # user_name      run under username with manual
+    # passwd         password for user with manual
+    # args           IPMI command to be executed.
+
+    ${ipmi_cmd}=  Catenate  SEPARATOR=
+    ...  ${IPMI_EXT_CMD} -P${SPACE}${passwd}
+    ...  ${SPACE}${USER}${SPACE}${user_name}
     ...  ${SPACE}${HOST}${SPACE}${OPENBMC_HOST}${SPACE}${args}
     ${rc}  ${output}=  Run And Return RC and Output  ${ipmi_cmd}
     Return From Keyword If  ${fail_on_err} == ${0}  ${output}
