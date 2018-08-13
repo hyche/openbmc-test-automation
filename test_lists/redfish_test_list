@@ -30,6 +30,7 @@
 # Log Service SEL test cases
 -i Test_Log_Service_SEL_Get_Fixed_Entries
 -i Test_Log_Service_SEL_Get_Flexible_Entries
+-i Verify_Action_Log_Service_Reset
 
 # Redfish Interfaces test cases
 -i Test_Get_Redfish_Session_Id

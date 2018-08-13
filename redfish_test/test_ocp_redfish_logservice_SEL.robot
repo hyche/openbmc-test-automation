@@ -6,6 +6,7 @@ Library                Collections
 Resource               ../lib/redfish_client.robot
 Resource               ../lib/rest_client.robot
 Resource               ../lib/openbmc_ffdc.robot
+Resource               ../lib/ipmi_client.robot
 
 Test Setup             Test Setup Execution
 Test Teardown          Test Teardown Execution
@@ -13,6 +14,7 @@ Test Teardown          Test Teardown Execution
 *** Variables ***
 
 ${SEL_uri}         Systems/1/LogServices/SEL
+${log_reset_uri}   ${SEL_uri}/Actions/LogService.Reset
 ${expected_file_path}  ./redfish_test/expected_json/LogServiceSEL.json
 
 *** Test Cases ***
@@ -55,6 +57,17 @@ Test Log Service SEL Get Flexible Entries
     ${expected_key}=  Get Log Collection Items Schema   STATE
     List Should Contain Sub List  ${expected_key}   ${Stt_State}
 
+Verify Action Log Service Reset
+    [Documentation]  Verify action log service reset by post method.
+    [Tags]  Verify_Action_Log_Service_Reset
+
+    Verify Log Service Reset Post Method  Empty Data Body
+
+    Verify Log Service Reset Post Method  Only Key Data Body
+
+    Verify Log Service Reset Post Method  Only Value Data Body
+
+    Verify Log Service Reset Post Method  Data Body
 
 *** Keywords ***
 
@@ -77,6 +90,62 @@ Verify Fixed Entries Node
     Dictionary Should Contain Sub Dictionary  ${output_req}  ${expected_json}
     ...  msg=Entries not match from expected JSON
     Log  "STEP: Verify Fixed Entries Node"
+
+Verify Log Service Reset Post Method
+    [Documentation]  Verify action log service reset by POST method.
+    [Arguments]  ${command}
+
+    # Execute Log Service Reset
+    :FOR  ${index}  IN RANGE  2
+    \  Execute Log Service Reset  ${command}
+
+    # Compare Remaining System Event Log
+    \  ${entry}=  Redfish Get Request  ${SEL_uri}/Entries  ${session_id}
+    \  ...  ${auth_token}
+    \  Should Be True  ${entry["Member@odata.count"]} == 0
+
+    # Create Event Log
+    Run External IPMI Standard Command  event 1
+    Run External IPMI Standard Command  event 2
+    Run External IPMI Standard Command  event 3
+
+    # Get Current Number System Event Log
+    ${resp}=  Redfish Get Request  ${SEL_uri}/Entries  ${session_id}
+    ...  ${auth_token}
+    Should Be True  ${resp["Member@odata.count"]} == 3
+
+    # Execute Log Service Reset
+    Execute Log Service Reset  ${command}
+
+    # Compare Remaining System Event Log
+    ${entry}=  Redfish Get Request  ${SEL_uri}/Entries  ${session_id}
+    ...  ${auth_token}
+    Should Be True  ${entry["Member@odata.count"]} == 0
+
+Execute Log Service Reset
+    [Documentation]  Execute Log Service Reset By Post Request.
+    [Arguments]  ${command}
+
+    ${resp}=  Run Keyword If  '${command}'=='Empty Data Body'
+    ...  Redfish Post Request  ${log_reset_uri}  ${auth_token}
+    ...  ELSE IF  '${command}'=='Only Key Data Body'
+    ...  Run Post Request  key  ${EMPTY}
+    ...  ELSE IF  '${command}'=='Only Value Data Body'
+    ...  Run Post Request  ${EMPTY}  value
+    ...  ELSE IF  '${command}'=='Data Body'
+    ...  Run Post Request  key  value
+    ${status_list}=
+    ...  Create List  '${HTTP_OK}'  '${HTTP_NO_CONTENT}'  '${HTTP_ACCEPTED}'
+    Should Contain  ${status_list}  '${resp.status_code}'
+
+Run Post Request
+    [Documentation]  Run Post Request With Other Data Body.
+    [Arguments]  ${key}  ${value}
+
+    ${dic_value}=  Create Dictionary  ${key}=${value}
+    ${resp}=  Redfish Post Request  ${log_reset_uri}  ${auth_token}
+    ...  data=${dic_value}
+    [Return]  ${resp}
 
 Test Setup Execution
     [Documentation]  Do the pre test setup.
