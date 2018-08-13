@@ -660,6 +660,13 @@ Verify IPMI User List
     Run Keyword If  '@{word}[4]' != 'true' or '@{word}[5]' != 'ADMINISTRATOR'
     ...  Should Be Equal  @{word}[11]  ADMINISTRATOR
 
+Verify IPMI MC Self Test
+    [Documentation]  Verify ipmi mc selftest command.
+    [Tags]  Verify_IPMI_MC_Self_Test
+
+    Verify Selftest Command Valid  mc selftest
+    Verify Selftest Functional  Selftest  passed
+
 *** Keywords ***
 
 Get Key Value From Output
@@ -903,3 +910,20 @@ Execute IPMI Command With Cipher
 
     ${rc}  ${output}=  Run And Return RC and Output  ${ipmi_cmd}
     Should Be Equal  ${rc}  ${0}  msg=${output}
+
+Verify Selftest Command Valid
+    [Documentation]  Verify if the command is valid or not.
+    [Arguments]  ${command}
+
+    ${error}  ${selftest_resp}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Standard Command  ${command}
+    Should Not Contain  ${selftest_resp}    Invalid command
+    Should Not Contain  ${selftest_resp}    Unspecified error
+    Set Test Variable  ${selftest_resp}
+
+Verify Selftest Functional
+    [Documentation]  Verify keywords in specific line.
+    [Arguments]  ${line_keyword}  ${keyword}
+
+    ${result}=  Get Lines Containing String  ${selftest_resp}  ${line_keyword}
+    Should Contain  ${result}  ${keyword}

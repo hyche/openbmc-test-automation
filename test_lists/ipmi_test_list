@@ -56,3 +56,6 @@
 
 -i Verify_Adding_Sample_Event_with_IPMI
 
+# Part 6:   IPMI MC TEST CASE
+
+-i Verify_IPMI_MC_Self_Test
