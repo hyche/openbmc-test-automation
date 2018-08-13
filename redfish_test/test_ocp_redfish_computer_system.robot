@@ -36,6 +36,19 @@ Verify Indicator LED Setting Function
 
     [Teardown]  Reset Indicator LED Status
 
+Verify Compuer System Bios Version
+    [Documentation]    Verify bios version of computer system from Redfish.
+    [Tags]  Verify_Computer_System_Bios_Version
+
+    # Verify bios version by comparing to expected value.
+    ${value}=  Set Variable  ${output_json["BiosVersion"]}
+    Should Not Be Empty  ${value}
+    ...  msg=Bios version getting from REDFISH is empty.
+    Should Be Equal As Strings  ${value}  %{BIOS_VERSION}
+
+    # %{BIOS_VERSION} : This is pre-define Jenkins Job exported variable.
+    # TODO: Get expected Bios version on D-BUS when it is supported.
+
 *** Keywords ***
 
 Verify Computer System Fixed Sessions

@@ -17,6 +17,7 @@
 # Computer System test cases
 -i Verify_Computer_System_All_Sessions
 -i Verify_Indicator_LED_Setting_Function
+-i Verify_Computer_System_Bios_Version
 
 # Computer System Collection test cases
 -i Test_Get_Systems_Node
