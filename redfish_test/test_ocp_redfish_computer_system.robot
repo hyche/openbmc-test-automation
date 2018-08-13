@@ -26,6 +26,16 @@ Verify Computer System All Sessions
     Verify Computer System Fixed Sessions
     Verify Computer System Flexible Sessions
 
+Verify Indicator LED Setting Function
+    [Documentation]    Verify indicator LED setting fuction via redfish API.
+    [Tags]  Verify_Indicator_LED_Setting_Function
+
+    Verify Indicator LED Status  Off
+    Verify Indicator LED Status  Blinking
+    Verify Indicator LED Status  Lit
+
+    [Teardown]  Reset Indicator LED Status
+
 *** Keywords ***
 
 Verify Computer System Fixed Sessions
@@ -125,6 +135,34 @@ Test Dynamic Fields
 
     ${expected_value}=  Get Computer System Items Schema  ${expected_key}
     Should Contain  ${expected_value}  ${output_value}
+
+Verify Indicator LED Status
+    [Documentation]  Verify indicator led state of computer system.
+    [Arguments]  ${led_status}
+
+    # Set indicator led status
+    ${new_state}=  Create Dictionary  IndicatorLED=${led_status}
+    ${stt}=  Run Keyword And Return Status
+    ...  Redfish Patch Request  ${system_uri}  ${auth_token}  data=${new_state}
+    Run Keyword If  '${stt}'=='False'  Log  Patch Request Fail
+    Sleep  5 sec
+
+    # Read indicator led status
+    ${resp}=  Redfish Get Request  ${system_uri}  ${session_id}
+    ...  ${auth_token}
+
+    # Compare indicator led status.
+    Should Be Equal As Strings  ${resp["IndicatorLED"]}  ${led_status}
+
+Reset Indicator LED Status
+    [Documentation]  Reset indicator led to the initial state.
+
+    # Set indicator led intial status.
+    Run Keyword If  '${output_json["IndicatorLED"]}'=='Off'
+    ...  Set System Led State  identify  Off
+    ...  ELSE IF  '${output_json["IndicatorLED"]}'=='Blinking'
+    ...  Set System Led State  identify  Blink
+    ...  ELSE  Set System Led State  identify  On
 
 Test Setup Execution
     [Documentation]  Do the pre test setup.
