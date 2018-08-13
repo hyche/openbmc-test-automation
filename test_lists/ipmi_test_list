@@ -63,3 +63,4 @@
 # Part 7:  IPMI USER TEST CASE
 
 -i Verify_IPMI_User_Set_Password
+-i Verify_IPMI_User_Set_Name_Command
