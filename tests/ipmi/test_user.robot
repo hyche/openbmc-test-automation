@@ -60,6 +60,13 @@ Verify IMPI User Disable Command
 
     Verify Disable Command Functional   user list
 
+Verify IMPI User Change Priv Command
+    [Documentation]  Verify ipmi user change privilege
+    [Tags]  Verify_IPMI_User_Change_Priv_Command
+    [Teardown]  Test Teardown For User Privilege Command
+
+    Verify Privilege Of User After Setting
+
 *** Keywords ***
 
 Test Setup For User Disable Command
@@ -92,6 +99,15 @@ Test Setup For User Enable Command
     ${error}  ${data_resp}=  Run Keyword And Ignore Error
     ...  Run External IPMI Standard Command
     ...  user disable ${user_id}
+
+Get Current User Privilege
+    [Documentation]  Get current privilege from user priv command.
+
+    ${error}  ${data_resp}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Standard Command  user list
+    ${resp}=  Get Lines Containing String  ${data_resp}  ${user_name}
+    @{word}=  Split String  ${resp}
+    Set Test Variable  ${priv_data}  @{word}[5]
 
 Verify Password Setting Is Valid
     [Documentation]  Verify the password setting is success
@@ -216,6 +232,26 @@ Verify Disable Command Functional
     Run Keyword If  '${error}' != 'FAIL'  Fail
     Should Contain  ${data_resp}    Unable to establish IPMI
 
+Verify Privilege Of User After Setting
+    [Documentation]  Verify the privilege of user after setting
+
+    # Get the current privilege level of 1 user and compare with created user
+    Get Current User Privilege
+    Should Be Equal  ${priv_data}  ADMINISTRATOR
+
+    # Set the new privilege level for this user
+    ${error}  ${data_resp}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Standard Command
+    ...  user priv ${User_ID} 0x02 0x01
+
+    # Confirm if the user has the new privilege level
+    ${error}  ${data_resp}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Standard Command  user list
+
+    ${resp}=  Get Lines Containing String  ${data_resp}  ${user_name}
+    @{word}=  Split String  ${resp}
+    Should Be Equal  @{word}[5]  USER
+
 Test Teardown For Set Password Command
     [Documentation]  Test Teardown For Set Password Command
 
@@ -246,5 +282,15 @@ Test Teardown For User Disable Command
     # Restore user to default created status.
     Run Keyword And Ignore Error  Run External IPMI Standard Comman
     ...  user enable ${user_id}
+
+    FFDC On Test Case Fail
+
+Test Teardown For User Privilege Command
+    [Documentation]  Collect FFDC and Return current privilege
+
+    # Restore privilege for user
+    ${error}  ${data_resp}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Standard Command
+    ...  user priv ${User_ID} 0x04 0x01
 
     FFDC On Test Case Fail

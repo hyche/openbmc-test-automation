@@ -66,3 +66,4 @@
 -i Verify_IPMI_User_Set_Name_Command
 -i Verify_IPMI_User_Enable_Command
 -i Verify_IPMI_User_Disable_Command
+-i Verify_IPMI_User_Change_Priv_Command
