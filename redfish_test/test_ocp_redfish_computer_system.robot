@@ -15,6 +15,9 @@ Test Teardown          Test Teardown Execution
 *** Variables ***
 
 ${system_uri}           Systems/1
+${reset_uri}            Systems/1/Actions/ComputerSystem.Reset
+${chassis_uri}          Chassis/1
+
 ${file_json}            ./redfish_test/expected_json/ComputerSystem.json
 
 *** Test Cases ***
@@ -35,6 +38,20 @@ Verify Indicator LED Setting Function
     Verify Indicator LED Status  Lit
 
     [Teardown]  Reset Indicator LED Status
+
+Verify Computer System Reset Action
+    [Documentation]    Verify computer system reset action by post method.
+    [Tags]  Verify_Computer_System_Reset_Action
+
+    Verify System Reset Action Type  ForceOff
+
+    Verify System Reset Action Type  On
+
+    Verify System Reset Action Type  GracefulRestart
+
+    Verify System Reset Action Type  GracefulShutdown
+
+    Verify System Reset Action Type  ForceRestart
 
 Verify Compuer System Bios Version
     [Documentation]    Verify bios version of computer system from Redfish.
@@ -176,6 +193,66 @@ Reset Indicator LED Status
     ...  ELSE IF  '${output_json["IndicatorLED"]}'=='Blinking'
     ...  Set System Led State  identify  Blink
     ...  ELSE  Set System Led State  identify  On
+
+Verify System Reset Action Type
+    [Documentation]  Verify system reset action via some types of Redfish.
+    [Arguments]  ${type}
+
+    # Reset type:
+    # 1. On
+    # 2. ForceOff
+    # 3. GracefulRestart
+    # 4. GracefulShutdown
+    # 5. ForceRestart
+
+    # Execute Post Action
+    Execute Post Action  ${type}
+
+    # Check Power State Via Reset Types
+    Run Keyword If  '${type}'=='ForceOff' or '${type}'=='GracefulShutdown'
+    ...  Wait Until Keyword Succeeds  1 min  10 sec
+    ...  Check Power State  Off
+    ...  ELSE IF  '${type}'=='On'
+    ...  Wait Until Keyword Succeeds  1 min  10 sec
+    ...  Check Power State  On
+    ...  ELSE  Run Keywords
+    ...  Wait Until Keyword Succeeds  1 min  2 sec
+    ...  Check Power State  Off
+    ...  AND  Wait Until Keyword Succeeds  1 min  10 sec
+    ...  Check Power State  On
+
+    # Delay 3 minutes to recover the system.
+    Sleep  3 min
+
+Execute Post Action
+    [Documentation]  Execute system reset action via POST request.
+    [Arguments]  ${type}
+
+    ${data}=  Create Dictionary  ResetType=${type}
+    ${resp}=  Redfish Post Request  ${reset_uri}  ${auth_token}  data=${data}
+    ${status_list}=
+    ...  Create List  '${HTTP_OK}'  '${HTTP_NO_CONTENT}'  '${HTTP_ACCEPTED}'
+    Should Contain  '${status_list}  '${resp.status_code}'
+
+Check Power State
+    [Documentation]  Check the power state of host or chassis via redfish.
+    [Arguments]  ${state}
+
+    # Get Host State
+    ${resp}=  Redfish Get Request  ${system_uri}  ${session_id}
+    ...  ${auth_token}
+
+    # Compare Host State
+    Should Be Equal As Strings  ${resp["PowerState"]}  ${state}
+    ...  msg=Host power is not change as expected
+
+    # Get Chassis State
+    ${resp}=  Redfish Get Request  ${chassis_uri}  ${session_id}
+    ...  ${auth_token}
+
+    # Compare Chassis State
+    Should Be Equal As Strings  ${resp["PowerState"]}  ${state}
+    ...  msg=Chassis power is not change as expected
 
 Test Setup Execution
     [Documentation]  Do the pre test setup.
