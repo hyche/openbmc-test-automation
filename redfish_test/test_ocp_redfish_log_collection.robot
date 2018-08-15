@@ -17,6 +17,8 @@ ${entries_uri}         Systems/1/LogServices/SEL/Entries
 ${service_uri}         Systems/1/LogServices
 ${expected_file_path}  ./redfish_test/expected_json/LogEntryCollection.json
 ${service_file_path}   ./redfish_test/expected_json/LogServiceCollection.json
+${NUM_SPECIFY}          ${1}
+${specify_file_path}   ./redfish_test/expected_json/SpecifiedLogEntry.json
 
 *** Test Cases ***
 
@@ -83,8 +85,27 @@ Test Log Service Collection
     \  Run Keyword If  ${i} == ${count}   Fail
     ...  "Test case failed with @odata.id is not exist"
 
+Verify Specified Log Entry
+    [Documentation]  Verify response JSON payload Specify Log Entry
+    ...  with argument is ${NUM_SPECIFY} as <ID> for entry test log
+    [Tags]  Verify_Specified_Log_Entry
+    [Setup]  Setup Specified Log Entry
+
+    Verify Fixed Entries Node  ${output_json}  ${expected_json}
+
+    Verify Flexible Entries Node
 
 *** Keywords ***
+
+Setup Specified Log Entry
+    [Documentation]  Do setup for specify log entry
+
+    Test Setup Execution
+    ${specify_uri}=  Catenate  SEPARATOR=   ${entries_uri}   /${NUM_SPECIFY}
+    ${output_json}=  Parse Json From Response  ${specify_uri}
+    Set Test Variable  ${output_json}
+    ${expected_json}=  Parse Json From File  ${specify_file_path}
+    Set Test Variable  ${expected_json}
 
 Verify Fixed Entries Node
     [Documentation]  Verify all the fixed entries got from GET request.
@@ -93,6 +114,62 @@ Verify Fixed Entries Node
     Dictionary Should Contain Sub Dictionary  ${output_req}  ${expected_json}
     ...  msg=Entries not match from expected JSON
     Log  "STEP: Verify Fixed Entries Node"
+
+Verify Flexible Entries Node
+    [Documentation]  Verify Flexible Entries from Get method for specify
+    ...  logentry with ID
+
+    # Check message(if have) is not empty
+    ${mess_info}=   Get Data From Entries   ${output_json}   Message
+    Run Keyword If  '${res_logs}' == 'PASS'
+    ...  Should Not Be Empty  ${mess_info}
+
+    # Check date-time correctly format as "2018-07-17T09:32"
+    ${date_time}=   Get Data From Entries  ${output_json}   Created
+    Run Keyword If  '${res_logs}' == 'PASS' and '${date_time}' != '${EMPTY}'
+    ...  Should Match Regexp  ${date_time}
+    ...  \\d{4}\\-\\d{2}\\-\\d{2}T\\d{2}:\\d{2}
+
+    # Check "Name" entry = "Log Entry" + ID of testcase or not?
+    ${get_id}=  Get Data From Entries  ${output_json}  Id
+
+    ${exp_name}=  Get Data From Entries  ${output_json}  Name
+
+    ${tmp_name}=  Catenate    Log Entry  ${get_id}
+    Run Keyword If  '${res_logs}' == 'PASS'
+    ...  Should Be Equal As Strings  ${exp_name}  ${tmp_name}
+
+    # Check @odata.id = "uri" of testcase (combine ID)
+    ${exp_dataId}=  Get From Dictionary  ${output_json}  @odata.id
+    ${tmp_dataId}=  Catenate   SEPARATOR=  /redfish/v1/${entries_uri}
+    ...  /${NUM_SPECIFY}
+    Should Be Equal As Strings   ${exp_dataId}  ${tmp_dataId}
+
+    # Check "SensorNumber" is exist or not?
+    ${SensorNumber}=  Get Data From Entries  ${output_json}   SensorNumber
+    Run Keyword If  '${res_logs}' == 'PASS'
+    ...  Should Not Be Equal As Strings  ${SensorNumber}  ${NONE}
+
+    # Check Sensortype is contain in list or not?
+    ${sensor_type}=  Get Data From Entries  ${output_json}   SensorType
+    ${sensor_type}=   Create List   ${sensor_type}
+    ${expected_key}=  Get Log Collection Items Schema  SENSORTYPE
+    Run Keyword If  '${res_logs}' == 'PASS'
+    ...  List Should Contain Sub List   ${expected_key}   ${sensor_type}
+
+    # Check Entrycode is contain in list or not?
+    ${entrycode}=  Get Data From Entries  ${output_json}  EntryCode
+    ${entrycode}=   Create List  ${entrycode}
+    ${expected_key}=  Get Log Collection Items Schema  ENTRYCODE
+    Run Keyword If  '${res_logs}' == 'PASS'
+    ...  List Should Contain Sub List   ${expected_key}   ${entrycode}
+
+    # Serverity is contain in list or not?
+    ${severity}=  Get Data From Entries  ${output_json}  Severity
+    ${severity}=  Create List  ${severity}
+    ${expected_key}=  Get Log Collection Items Schema  SEVERITY
+    Run Keyword If  '${res_logs}' == 'PASS' and '${severity}' != '${EMPTY}'
+    ...  List Should Contain Sub List   ${expected_key}  ${severity}
 
 Parse Json From Response
     [Documentation]    Convert to JSON object from body response content.
@@ -104,6 +181,15 @@ Parse Json From Response
 
     ${json}=          Redfish Get Request  ${uri}  ${session_id}  ${auth_token}
     [Return]          ${json}
+
+Get Data From Entries
+    [Documentation]  Get data from output request uri and return value.
+    [Arguments]  ${output_json}  ${keyword}
+
+    ${res_logs}  ${data}=   Run Keyword And Ignore Error
+    ...  Get From Dictionary  ${output_json}   ${keyword}
+    Set Test Variable  ${res_logs}
+    [Return]    ${data}
 
 Test Setup Execution
     [Documentation]  Do the pre test setup.
