@@ -15,4 +15,23 @@
 -i Verify_Redfish_Ethernet_Interface_Hostname
 
 # Computer System test cases
+-i Verify_Computer_System_All_Sessions
 -i Verify_Indicator_LED_Setting_Function
+
+# Computer System Collection test cases
+-i Test_Get_Systems_Node
+-i Test_Computer_System_Collection
+
+# Log Collection test cases
+-i Verify_Log_Entry_Collection_Fixed_Entries
+-i Verify_Log_Entry_Collection_Flexible_Entries
+-i Test_Log_Service_Collection
+
+# Log Service SEL test cases
+-i Test_Log_Service_SEL_Get_Fixed_Entries
+-i Test_Log_Service_SEL_Get_Flexible_Entries
+
+# Redfish Interfaces test cases
+-i Test_Get_Redfish_Session_Id
+-i Test_Invalid_Redfish_Token_Access
+-i Test_Get_Redfish_Response_Codes
