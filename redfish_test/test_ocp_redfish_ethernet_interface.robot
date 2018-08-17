@@ -11,13 +11,15 @@ Test Setup     Test Setup Execution
 Test TearDown  Test Teardown Execution
 
 *** Variables ***
-${eth_id}                   eth0
-${eth_uri}                  Managers/bmc/EthernetInterfaces/${eth_id}
-${valid_ipv4}               10.6.6.6
-${valid_ipv4_2}             10.6.6.7
-${valid_ipv4_subnet_mask}   255.255.255.0
-${valid_ipv4_prefix_len}    ${24}
-${valid_ipv4_gateway}       10.6.6.1
+${eth_id}                     eth0
+${eth_uri}                    Managers/bmc/EthernetInterfaces/${eth_id}
+${valid_ipv4}                 10.6.6.6
+${valid_ipv4_2}               10.6.6.7
+${valid_ipv4_subnet_mask}     255.255.255.0
+${valid_ipv4_subnet_mask_2}   255.255.252.0
+${valid_ipv4_prefix_len}      ${24}
+${valid_ipv4_gateway}         10.6.6.1
+${valid_ipv4_gateway_2}       10.6.4.1
 
 *** Test Cases ***
 Verify Redfish Ethernet Interface Hostname
@@ -135,7 +137,50 @@ Change IPv4 With Only Address Via Redfish And Verify
     Delete IP Via Redfish Given Address  4  ${valid_ipv4_2}  @{ipv4_info_list}
     Verify IP On BMC  ${valid_ipv4_2}  error  # Verify deleted IPv4
 
+Change IPv4 With Full Fields Via Redfish And Verify
+    [Documentation]  Change existing IPv4 via redfish with full fields
+    ...  are provided in request data, and then verify.
+    [Tags]  Change_IPv4_With_Full_Fields_Via_Redfish_And_Verify
+
+    Verify After Adding New IPV4 Via Redfish  ${valid_ipv4}
+    ...  ${valid_ipv4_subnet_mask}  ${valid_ipv4_gateway}
+
+    Verify After Changing IPV4 Via Redfish  ${valid_ipv4}  ${valid_ipv4_2}
+    ...  ${valid_ipv4_subnet_mask_2}  ${valid_ipv4_gateway_2}
+
+    Verify After Delete IPV4 Via Redfish  ${valid_ipv4_2}
+
 *** Keywords ***
+
+Verify After Adding New IPV4 Via Redfish
+    [Documentation]  Add new IPV4 and verify via redfish.
+    [Arguments]  ${ipv4_addr}  ${subnet_mask}  ${gateway}
+
+    ${ipv4_info_list}=  Get From Dictionary  ${ethernet_info}  IPv4Addresses
+    Add New IPv4 Via Redfish  ${ipv4_addr}  ${subnet_mask}
+    ...  ${gateway}  ${False}  @{ipv4_info_list}
+    Verify IP On BMC  ${ipv4_addr}  valid  # Verify added IPv4
+
+Verify After Changing IPV4 Via Redfish
+    [Documentation]  Change IPV4 and verify via redfish.
+    [Arguments]  ${ipv4_addr}  ${ipv4_addr_2}  ${subnet_mask}  ${gateway}
+
+    ${ipv4_info_list}=  Redfish Get Property  ${eth_uri}  IPv4Addresses
+    ...  ${auth_token}
+    Change IPv4 Via Redfish  ${ipv4_addr}  ${ipv4_addr_2}  ${subnet_mask}
+    ...  ${gateway}  @{ipv4_info_list}
+    Verify IP On BMC  ${ipv4_addr}  error    # Verify deleted old IPv4
+    Verify IP On BMC  ${ipv4_addr_2}  valid  # Verify changed IPv4
+
+Verify After Delete IPV4 Via Redfish
+    [Documentation]  Delete IPV4 after changing and verify via redfish.
+    [Arguments]  ${ipv4_addr_2}
+
+    ${ipv4_info_list}=  Redfish Get Property  ${eth_uri}  IPv4Addresses
+    ...  ${auth_token}
+    Delete IP Via Redfish Given Address  4  ${ipv4__addr_2}  @{ipv4_info_list}
+    Verify IP On BMC  ${ipv4_addr_2}  error  # Verify deleted IPv4
+
 Add New IPv4 Via Redfish
     [Documentation]  Add the IPv4 via redfish
     [Arguments]  ${ipv4_addr}  ${subnet_mask}  ${gateway}  ${empty}
