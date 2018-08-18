@@ -75,8 +75,7 @@ Verify Computer System Flexible Sessions
     Verify Computer System Information
     Verify Computer System Processor Summary
     Verify Computer System Memory Summary
-
-    # TODO: Add test case for UUID when it is supported.
+    Verify Computer System UUID
 
 Verify Computer System Hostname
     [Documentation]  Verify the hostname from bmcweb and compare to
@@ -214,6 +213,21 @@ Verify Computer System Bios Version
     ...  msg=Bios version getting via REDFISH is empty.
     Should Be Equal As Strings  ${value}  ${bios_version}
     ...  msg=Bios version getting via REDFISH is not correct.
+
+Verify Computer System UUID
+    [Documentation]    Verify UUID of computer system from Redfish.
+
+    # Get UUID via Redfish.
+    ${value}=  Set Variable  ${output_json["UUID"]}
+
+    # Get UUID via Rest.
+    ${info}=  Read Properties  ${HOST_INVENTORY_URI}fru0/multirecord
+
+    # Compare UUID.
+    Should Not Be Empty  ${value}
+    ...  msg=UUID read via REDFISH is empty.
+    Should Be Equal As Strings  ${value}  ${info["Record_1"]}
+    ...  msg=UUID read via REDFISH is not correct.
 
 Test Dynamic Fields
     [Documentation]  Verify expected keys getting from inventory with
