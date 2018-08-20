@@ -106,3 +106,8 @@ Get Log Collection Items Schema
     [Documentation]  Get Log Collection Items.
     [Arguments]    ${machine}
     [Return]     &{LOG_COLLECTION_ITEMS}[${machine}]
+
+Get Chassis Items Schema
+    [Documentation]  Get Log Collection Items.
+    [Arguments]    ${machine}
+    [Return]     &{CHASSIS_ITEMS}[${machine}]

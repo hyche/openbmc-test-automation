@@ -38,3 +38,6 @@
 -i Test_Get_Redfish_Session_Id
 -i Test_Invalid_Redfish_Token_Access
 -i Test_Get_Redfish_Response_Codes
+
+# Chassis test cases
+-i Verify_Chassis_All_Sessions

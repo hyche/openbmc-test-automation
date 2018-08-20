@@ -546,3 +546,50 @@ LOG_COLLECTION_ITEMS = {
         "Debug",
     ],
 }
+
+# redfish chassis items from DSP8010_2018.1 Redfish Schema Bundle.
+# it is used for ocp redfish chassis test suite.
+
+CHASSIS_ITEMS = {
+    "CHASSIS_TYPE": [
+        "Rack",
+        "Blade",
+        "Enclosure",
+        "StandAlone",
+        "RackMount",
+        "Card",
+        "Cartridge",
+        "Row",
+        "Pod",
+        "Expansion",
+        "Sidecar",
+        "Zone",
+        "Sled",
+        "Shelf",
+        "Drawer",
+        "Module",
+        "Component",
+        "IPBasedDrive",
+        "RackGroup",
+        "StorageEnclosure",
+        "Other"
+    ],
+    "STATE": [
+        "Enabled",
+        "Disabled",
+        "StandbyOffline",
+        "StandbySpare",
+        "InTest",
+        "Starting",
+        "Absent",
+        "UnavailableOffline",
+        "Deferring",
+        "Quiesced",
+        "Updating",
+    ],
+    "HEALTH": [
+        "OK",
+        "Warning",
+        "Critical",
+    ],
+}
