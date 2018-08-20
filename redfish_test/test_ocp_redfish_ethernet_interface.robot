@@ -13,11 +13,11 @@ Test TearDown  Test Teardown Execution
 *** Variables ***
 ${eth_id}                   eth0
 ${eth_uri}                  Managers/bmc/EthernetInterfaces/${eth_id}
-${valid_ipv4}               10.38.15.201
-${valid_ipv4_2}             10.38.15.202
-${valid_ipv4_subnet_mask}   255.255.252.0
-${valid_ipv4_prefix_len}    ${22}
-${valid_ipv4_gateway}       10.38.12.1
+${valid_ipv4}               10.6.6.6
+${valid_ipv4_2}             10.6.6.7
+${valid_ipv4_subnet_mask}   255.255.255.0
+${valid_ipv4_prefix_len}    ${24}
+${valid_ipv4_gateway}       10.6.6.1
 
 *** Test Cases ***
 Verify Redfish Ethernet Interface Hostname
