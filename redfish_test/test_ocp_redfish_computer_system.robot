@@ -53,19 +53,6 @@ Verify Computer System Reset Action
 
     Verify System Reset Action Type  ForceRestart
 
-Verify Compuer System Bios Version
-    [Documentation]    Verify bios version of computer system from Redfish.
-    [Tags]  Verify_Computer_System_Bios_Version
-
-    # Verify bios version by comparing to expected value.
-    ${value}=  Set Variable  ${output_json["BiosVersion"]}
-    Should Not Be Empty  ${value}
-    ...  msg=Bios version getting from REDFISH is empty.
-    Should Be Equal As Strings  ${value}  %{BIOS_VERSION}
-
-    # %{BIOS_VERSION} : This is pre-define Jenkins Job exported variable.
-    # TODO: Get expected Bios version on D-BUS when it is supported.
-
 *** Keywords ***
 
 Verify Computer System Fixed Sessions
@@ -82,11 +69,12 @@ Verify Computer System Flexible Sessions
     Verify Computer System Boot
     Verify Computer System Indicator Led
     Verify Computer System Power State
+    Verify Computer System Bios Version
     Verify Computer System Asset Tag
     Verify Computer System Status
     Verify Computer System Information
 
-    # TODO: Add test case for UUID and BIOS Version when they are supported.
+    # TODO: Add test case for UUID when it is supported.
 
 Verify Computer System Hostname
     [Documentation]  Verify the hostname from bmcweb and compare to
@@ -157,6 +145,22 @@ Verify Computer System Asset Tag
 
     ${asset_tag}=  Run IPMI Standard Command  dcmi asset_tag
     Should Contain  ${asset_tag}  ${output_json["AssetTag"]}
+
+Verify Computer System Bios Version
+    [Documentation]    Verify bios version of computer system from Redfish.
+
+    # Get Bios Version Via Redfish
+    ${value}=  Set Variable  ${output_json["BiosVersion"]}
+
+    # Get Bios Version Via Rest
+    ${bios_version}=  Read Attribute
+    ...  ${SOFTWARE_VERSION_URI}host/inventory  BiosVersion
+
+    # Compare Bios Version.
+    Should Not Be Empty  ${value}
+    ...  msg=Bios version getting via REDFISH is empty.
+    Should Be Equal As Strings  ${value}  ${bios_version}
+    ...  msg=Bios version getting via REDFISH is not correct.
 
 Test Dynamic Fields
     [Documentation]  Verify expected keys getting from inventory with
@@ -269,6 +273,7 @@ Test Setup Execution
 Test Teardown Execution
     [Documentation]  Do the test teardown.
 
+    ${session_id}  ${auth_token} =  Redfish Login Request
     ${session_uri} =
     ...  Catenate  SEPARATOR=  ${REDFISH_SESSION_URI}  ${session_id}
 
