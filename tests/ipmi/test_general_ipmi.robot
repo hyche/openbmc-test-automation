@@ -1,6 +1,7 @@
 *** Settings ***
 Documentation       This suite is for testing general IPMI functions.
 
+Resource            ../../lib/rest_client.robot
 Resource            ../../lib/ipmi_client.robot
 Resource            ../../lib/openbmc_ffdc.robot
 Resource            ../../lib/boot_utils.robot
@@ -16,6 +17,8 @@ Test Teardown       FFDC On Test Case Fail
 ${new_mc_id}=  HOST
 ${allowed_temp_diff}=  ${1}
 ${allowed_power_diff}=  ${10}
+
+${HOST_UUID}=  ${HOST_INVENTORY_URI}fru0/multirecord
 
 *** Test Cases ***
 
@@ -667,6 +670,13 @@ Verify IPMI MC Self Test
     Verify Selftest Command Valid  mc selftest
     Verify Selftest Functional  Selftest  passed
 
+Verify IPMI MC GUID Test
+    [Documentation]  Verify ipmi mc guid command.
+    [Tags]  Verify_IPMI_MC_GUID_Test
+
+    Verify MC GUID Command Valid
+    Verify Value Of GUID
+
 *** Keywords ***
 
 Get Key Value From Output
@@ -927,3 +937,24 @@ Verify Selftest Functional
 
     ${result}=  Get Lines Containing String  ${selftest_resp}  ${line_keyword}
     Should Contain  ${result}  ${keyword}
+
+Verify MC GUID Command Valid
+    [Documentation]  Verify if the command is valid or not.
+
+    # Run command mc guid
+     ${error}  ${data_guid}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Standard Command  mc guid
+
+    # Check command is valid
+    Should Not Contain  ${data_guid}    Invalid command
+    Should Not Contain  ${data_guid}    Unspecified error
+    Set Test Variable  ${data_guid}
+
+Verify Value Of GUID
+    [Documentation]  Verify value of guid with uuid
+
+    # Check UUID from FRU
+    ${data_uuid}=  Read Properties  ${HOST_UUID}
+
+    # Compate with GUID
+    Should Be Equal As Strings    ${data_guid}   ${data_uuid["Record_1"]}
