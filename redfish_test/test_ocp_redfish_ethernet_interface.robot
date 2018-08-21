@@ -54,6 +54,20 @@ Add New Valid IPv4 And Delete And Verify
     Delete IP Via Redfish Given Address  4  ${valid_ipv4}  @{ipv4_info_list}
     Verify IP On BMC  ${valid_ipv4}  error  # Verify deleted IPv4
 
+Verify Ethernet Interface MAC Address
+    [Documentation]  Verify that the MAC address read via redfish is same as
+    ...  MAC address configured on system.
+    [Tags]  Verify_Ethernet_Interface_MAC_Address
+
+    # Get MAC address on system
+    ${macaddr}=  Read Attribute  ${NETWORK_MANAGER}/eth0  MACAddress
+
+    # Compare MAC address read from redfish
+    Should Not Be Empty  ${ethernet_info["MACAddress"]}
+    ...  msg=MAC Address read via redfish is empty.
+    Should Be Equal As Strings  ${macaddr}  ${ethernet_info["MACAddress"]}
+    ...  msg=MAC Address read via redfish is not correct.
+
 Delete Non Existing IPv4 Via Redfish And Verify
     [Documentation]  Delete non-existing IPv4 via redfish by assigning null
     ...  entry to request data, and then verify setting.
@@ -267,6 +281,7 @@ Test Setup Execution
 Test Teardown Execution
     [Documentation]  Do the test teardown.
 
+    ${session_id}  ${auth_token} =  Redfish Login Request
     ${session_uri} =
     ...  Catenate  SEPARATOR=  ${REDFISH_SESSION_URI}  ${session_id}
 
