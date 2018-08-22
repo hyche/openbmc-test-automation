@@ -73,6 +73,7 @@ Verify Computer System Flexible Sessions
     Verify Computer System Asset Tag
     Verify Computer System Status
     Verify Computer System Information
+    Verify Computer System Processor Summary
 
     # TODO: Add test case for UUID when it is supported.
 
@@ -139,6 +140,40 @@ Verify Computer System Information
 
     # TODO: Update code for mutiple system.
     # This is just for single system.
+
+Verify Computer System Processor Summary
+    [Documentation]  Verify ProcessorSummary Object's Count, Model, Status
+    ...  property by compare it with value retrieved from REST server.
+
+    # Check Count property
+    Check Redfish Property With REST
+    ...  ${output_json["ProcessorSummary"]["Count"]}
+    ...  ${SOFTWARE_HOST_INVENTORY_URI}  Count
+
+    # Check Model property
+    Check Redfish Property With REST
+    ...  ${output_json["ProcessorSummary"]["Model"]}
+    ...  ${SOFTWARE_HOST_INVENTORY_URI}  Model
+
+    # Check Status property
+    Check Redfish Property With REST
+    ...  ${output_json["ProcessorSummary"]["Status"]["State"]}
+    ...  ${SOFTWARE_HOST_INVENTORY_URI}  State
+    Check Redfish Property With REST
+    ...  ${output_json["ProcessorSummary"]["Status"]["Health"]}
+    ...  ${SOFTWARE_HOST_INVENTORY_URI}  Health
+
+Check Redfish Property With REST
+    [Documentation]  Check Redfish's property by compare with value retrieved
+    ...  from REST server.
+    [Arguments]  ${rf_value}  ${rest_uri}  ${rest_property}
+
+    # Argument: rf_value: redfish's value
+    #           rest_uri: URI contains corresponding property from REST server
+    #           res_property: name of corresponsding property
+
+    ${rest_value}=  Read Attribute  ${rest_uri}  ${rest_property}
+    Should Be Equal  ${rf_value}  ${rest_value}
 
 Verify Computer System Asset Tag
     [Documentation]  Verify asset tag of computer system.
