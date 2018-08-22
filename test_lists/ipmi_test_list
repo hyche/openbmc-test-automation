@@ -60,6 +60,7 @@
 
 -i Verify_IPMI_MC_Self_Test
 -i Verify_IPMI_MC_GUID_Test
+-i Verify_IPMI_MC_Getenables_Command
 
 # Part 7:  IPMI USER TEST CASE
 

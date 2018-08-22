@@ -677,6 +677,13 @@ Verify IPMI MC GUID Test
     Verify MC GUID Command Valid
     Verify Value Of GUID
 
+Verify IPMI MC Getenables Command
+    [Documentation]  Verify ipmi mc getenables command.
+    [Tags]  Verify_IPMI_MC_Getenables_Command
+
+    Verify MC Getenables Command Valid
+    Verify MC Getenables Command Functional
+
 *** Keywords ***
 
 Get Key Value From Output
@@ -958,3 +965,27 @@ Verify Value Of GUID
 
     # Compate with GUID
     Should Be Equal As Strings    ${data_guid}   ${data_uuid["Record_1"]}
+
+Verify MC Getenables Command Valid
+    [Documentation]  Verify if the command is valid or not.
+
+    # Run command mc getenables
+    ${error}  ${data_resp}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Standard Command   mc getenables
+
+    # Check command is valid or not
+    Should Not Contain  ${data_resp}    Invalid command
+    Should Not Contain  ${data_resp}    Unspecified error
+    Set Test Variable   ${data_resp}
+
+Verify MC Getenables Command Functional
+    [Documentation]  Verify mc getenable command function
+
+    # Check field if's supported will be enable
+    # Verify if SEL is enabled
+
+    ${output} =  Get Key Value From Output  ${data_resp}  System Event Logging
+    Should Be Equal As Strings  '${output}'  'enabled'
+    ...  msg=System Event Logging is Disable
+
+    # TODO: Verify other fields
