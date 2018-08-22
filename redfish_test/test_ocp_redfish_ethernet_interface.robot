@@ -31,6 +31,19 @@ Verify Redfish Ethernet Interface Hostname
     Should Contain  ${sys_hostname}  ${hostname}
     ...  ignore_case=True  msg=Hostname does not exist.
 
+Verify Ethernet Interface Interface Enabled
+    [Documentation]  Get InterfaceEnabled Property from Redfish with GET request
+    ...  and check with value from REST server.
+    [Tags]  Verify_Ethernet_Interface_Interface_Enabled
+
+    # Get InterfaceEnabled property
+    ${rf_value}=  Get From Dictionary  ${ethernet_info}  InterfaceEnabled
+
+    # Verify with expected value from REST
+    ${rf_value}=  Set Variable If  ${rf_value}  ${1}  ${0}
+    ${expected_result}=  Read Attribute  ${NETWORK_MANAGER}${eth_id}  Functional
+    Should Be Equal  ${rf_value}  ${expected_result}
+
 Verify Redfish Ethernet Interface Fixed Entries
     [Documentation]  Verify all the fixed entries got from GET request to
     ...  bmcweb are correct. According to DSP2049 (EthernetInterface resource)
