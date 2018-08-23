@@ -596,3 +596,31 @@ CHASSIS_ITEMS = {
         "Critical",
     ],
 }
+
+MANAGER_BMC_ITEMS = {
+    "RESET_TYPE": [
+        "On",
+        "ForceOff",
+        "GracefulShutdown",
+        "GracefulRestart",
+        "ForceRestart",
+        "Nmi",
+        "ForceOn",
+        "PushPowerButton",
+        "PowerCycle",
+    ],
+    "MANAGER_TYPE": [
+        "ManagementController",
+        "EnclosureManager",
+        "BMC",
+        "RackManager",
+        "AuxiliaryController",
+        "Service",
+    ],
+    "POWER_STATE": [
+        "On",
+        "Off",
+        "PoweringOn",
+        "PoweringOff",
+    ],
+}

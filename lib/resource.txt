@@ -111,3 +111,8 @@ Get Chassis Items Schema
     [Documentation]  Get Log Collection Items.
     [Arguments]    ${machine}
     [Return]     &{CHASSIS_ITEMS}[${machine}]
+
+Get Manager BMC Items Schema
+    [Documentation]  Get Manager BMC Items.
+    [Arguments]    ${machine}
+    [Return]     &{MANAGER_BMC_ITEMS}[${machine}]

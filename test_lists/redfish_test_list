@@ -41,3 +41,6 @@
 
 # Chassis test cases
 -i Verify_Chassis_All_Sessions
+
+# Manager test cases
+-i Verify_Manager_BMC_All_Sessions
