@@ -74,6 +74,7 @@ Verify Computer System Flexible Sessions
     Verify Computer System Status
     Verify Computer System Information
     Verify Computer System Processor Summary
+    Verify Computer System Memory Summary
 
     # TODO: Add test case for UUID when it is supported.
 
@@ -161,6 +162,23 @@ Verify Computer System Processor Summary
     ...  ${SOFTWARE_HOST_INVENTORY_URI}  State
     Check Redfish Property With REST
     ...  ${output_json["ProcessorSummary"]["Status"]["Health"]}
+    ...  ${SOFTWARE_HOST_INVENTORY_URI}  Health
+
+Verify Computer System Memory Summary
+    [Documentation]  Verify MemorySummary Object's TotalSystemMemoryGiB and
+    ...  Status property by compare it with REST result
+
+    # Check TotalSystemMemoryGiB property
+    Check Redfish Property With REST
+    ...  ${output_json["MemorySummary"]["TotalSystemMemoryGiB"]}
+    ...  ${SOFTWARE_HOST_INVENTORY_URI}  TotalSystemMemoryGiB
+
+    # Check Status property
+    Check Redfish Property With REST
+    ...  ${output_json["MemorySummary"]["Status"]["State"]}
+    ...  ${SOFTWARE_HOST_INVENTORY_URI}  State
+    Check Redfish Property With REST
+    ...  ${output_json["MemorySummary"]["Status"]["Health"]}
     ...  ${SOFTWARE_HOST_INVENTORY_URI}  Health
 
 Check Redfish Property With REST
