@@ -44,3 +44,4 @@
 
 # Manager test cases
 -i Verify_Manager_BMC_All_Sessions
+-i Verify_Manager_BMC_Reset_Action

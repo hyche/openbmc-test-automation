@@ -16,6 +16,8 @@ Test Teardown          Test Teardown Execution
 *** Variables ***
 
 ${manager_bmc_uri}           Managers/bmc
+${reset_uri}                 Managers/bmc/Actions/Manager.Reset
+
 ${file_json}                 ./redfish_test/expected_json/ManagerBmc.json
 
 *** Test Cases ***
@@ -27,6 +29,13 @@ Verify Manager BMC All Sessions
     Verify Manager BMC Fixed Sessions
 
     Verify Manager BMC Flexible Sessions
+
+Verify Manager BMC Reset Action
+    [Documentation]    Verify manager BMC reset action by post method.
+    [Tags]  Verify_Manager_BMC_Reset_Action
+
+    Verify Manager BMC Reset Action Type  GracefulRestart
+    Verify Manager BMC Reset Action Type  ForceRestart
 
 *** Keywords ***
 
@@ -103,6 +112,42 @@ Verify Dynamic Fields
 
     ${expected_value}=  Get Manager BMC Items Schema  ${expected_key}
     Should Contain  ${expected_value}  ${output_value}
+
+Verify Manager BMC Reset Action Type
+    [Documentation]  Verify bmc reset action via some types of Redfish.
+    [Arguments]  ${type}
+
+    # Reset type:
+    # 1. GracefulRestart
+    # 2. ForceRestart
+
+    # Execute Post Action
+    Execute Post Action  ${type}
+
+    # Check BMC Power State
+    # Wait for BMC state  NotReady
+    Wait Until Keyword Succeeds  5 min  5 sec  Check BMC IP  False
+    Wait Until Keyword Succeeds  5 min  5 sec  Check BMC IP  True
+
+    # Delay 3 minutes to recover the system.
+    Sleep  3 min
+
+Execute Post Action
+    [Documentation]  Execute bmc reset action via POST request.
+    [Arguments]  ${type}
+
+    ${data}=  Create Dictionary  ResetType=${type}
+    ${resp}=  Redfish Post Request  ${reset_uri}  ${auth_token}  data=${data}
+    ${status_list}=
+    ...  Create List  '${HTTP_OK}'  '${HTTP_NO_CONTENT}'  '${HTTP_ACCEPTED}'
+    Should Contain  '${status_list}  '${resp.status_code}'
+
+Check BMC IP
+    [Documentation]  Check BMC IP via ping command.
+    [Arguments]  ${expected_status}
+
+    ${status}=  Run Keyword And Return Status  Ping Host  ${OPENBMC_HOST}
+    Should Be Equal As Strings  ${status}  ${expected_status}
 
 Test Setup Execution
     [Documentation]  Do the pre test setup.
