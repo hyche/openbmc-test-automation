@@ -3,7 +3,7 @@
   "LogServices": {
     "@odata.id": "/redfish/v1/Systems/1/LogServices"
   },
-  "Id": 1,
+  "Id": "1",
   "Links": {
     "Chassis": [
       {
