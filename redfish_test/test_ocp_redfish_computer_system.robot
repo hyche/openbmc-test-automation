@@ -220,12 +220,17 @@ Verify Computer System UUID
     # Get UUID via Redfish.
     ${value}=  Set Variable  ${output_json["UUID"]}
 
+    # Check format of UUID.
+    Should Not Be Empty  ${value}
+    ...  msg=UUID read via REDFISH is empty.
+    ${data}=  Set Variable  [0-9a-fA-F]
+    Should Match Regexp  ${output_json["UUID"]}
+    ...  ^${data}{8}-${data}{4}-${data}{4}-${data}{4}-${data}{12}$
+
     # Get UUID via Rest.
     ${info}=  Read Properties  ${HOST_INVENTORY_URI}fru0/multirecord
 
     # Compare UUID.
-    Should Not Be Empty  ${value}
-    ...  msg=UUID read via REDFISH is empty.
     Should Be Equal As Strings  ${value}  ${info["Record_1"]}
     ...  msg=UUID read via REDFISH is not correct.
 
