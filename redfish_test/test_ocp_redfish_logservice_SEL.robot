@@ -34,10 +34,10 @@ Test Log Service SEL Get Flexible Entries
     # Get format date-time exp: "2018-08-01T07:23:03+00:00"
     ${date}=  Get From Dictionary  ${logS_info}   DateTime
     Should Match Regexp  ${date}
-    ...  \\d{4}\\-\\d{2}\\-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\+|\\-)\\d{2}:\\d{2}
+    ...  ^\\d{4}\\-\\d{2}\\-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\+|\\-)\\d{2}:\\d{2}$
 
     ${date_local}=  Get From Dictionary  ${logS_info}   DateTimeLocalOffset
-    Should Match Regexp  ${date_local}  (\\+|\\-)\\d{2}:\\d{2}
+    Should Match Regexp  ${date_local}  ^(\\+|\\-)\\d{2}:\\d{2}$
 
     ${overW_policy}=  Get From Dictionary  ${logS_info}  OverWritePolicy
     ${overW_policy}=  Create List   ${overW_policy}
