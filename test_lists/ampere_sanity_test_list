@@ -115,3 +115,4 @@
 # Include IPMI and redfish test lists
 --argumentfile test_lists/ipmi_test_list
 --argumentfile test_lists/redfish_test_list
+--argumentfile test_lists/fru_test_list
