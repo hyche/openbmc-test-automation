@@ -33,6 +33,31 @@ Verify Redfish Ethernet Interface Hostname
     Should Contain  ${sys_hostname}  ${hostname}
     ...  ignore_case=True  msg=Hostname does not exist.
 
+Verify Ethernet Interface Speed
+    [Documentation]  Verify ethernet interface speed got from redfish is the
+    ...  same as the one configured on system.
+    [Tags]  Verify_Ethernet_Interface_Speed
+
+    ${speed}=  Get From Dictionary  ${ethernet_info}  SpeedMbps
+    ${speed}=  Convert To String  ${speed}  # speed is int type from redfish
+    ${sys_speed}=  Get BMC Ethernet Interface Property  ${eth_id}  Speed
+
+    Should Contain  ${sys_speed}  ${speed}
+    ...  msg=Expected ethernet interface speed is ${sys_speed}
+
+Verify Ethernet Interface Auto Negotiation
+    [Documentation]  Verify ethernet interface auto negotiation got from redfish
+    ...  is the same as the one configured on system.
+    [Tags]  Verify_Ethernet_Interface_Auto_Negotiation
+
+    ${auto_neg}=  Get From Dictionary  ${ethernet_info}  AutoNeg
+    ${sys_auto_neg}=  Get BMC Ethernet Interface Property  ${eth_id}
+    ...  Auto-negotiation
+
+    ${auto_neg}=  Set Variable If  ${auto_neg} == ${True}  on  off
+    Should Contain  ${sys_auto_neg}  ${auto_neg}
+    ...  msg=Expected ethernet interface auto negotiation is ${sys_auto_neg}
+
 Verify Ethernet Interface Interface Enabled
     [Documentation]  Get InterfaceEnabled Property from Redfish with GET request
     ...  and check with value from REST server.
@@ -293,6 +318,18 @@ Change IPv4 Via Redfish
     ${data}=  Create Dictionary  IPv4Addresses=@{ipv4_info_list}
     Redfish Patch Request  ${eth_uri}  ${auth_token}  data=${data}
     Wait For Network Configuration
+
+Get BMC Ethernet Interface Property
+    [Documentation]  Get system ethernet interface info.
+    [Arguments]  ${device}  ${property}
+
+    # Description of argument(s):
+    # device        Ethernet interface device
+    # property      Property of ethernet interface (eg. duplex, speed, etc)
+
+    ${status}  ${intf_info}=  Get BMC Ethernet Interface Info  ${device}
+    ${lines}=  Get Lines Containing String  ${intf_info}  ${property}
+    [Return]  ${lines}
 
 Wait For Network Configuration
     [Documentation]  Wait for configuration of network (eg. delete, create ip)

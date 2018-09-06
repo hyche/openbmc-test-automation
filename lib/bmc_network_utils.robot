@@ -87,6 +87,49 @@ Get BMC Route Info
 
     [Return]  ${cmd_output}
 
+Get BMC Ethernet Interface Info
+    [Documentation]  Get system ethernet interface info.
+    [Arguments]  ${device}
+
+    # Checking if device is up
+    # Sample output of "ifconfig | grep eth0" (if exists)
+    # eth0      Link encap:Ethernet  HWaddr xx:xx:xx:xx:xx:xx
+
+    ${cmd_output}  ${stderr}  ${rc}=  BMC Execute Command
+    ...  /sbin/ifconfig | grep ${device}
+    ${status}=  Run Keyword And Return Status
+    ...  Should Not Be Empty  ${cmd_output}
+
+    # Sample output of "ethtool eth0"
+    # Settings for eth0:
+    # Supported ports: [ TP MII ]
+    # Supported link modes:   10baseT/Half 10baseT/Full
+    #                         100baseT/Half 100baseT/Full
+    #                         1000baseT/Half 1000baseT/Full
+    # Supported pause frame use: Symmetric Receive-only
+    # Supports auto-negotiation: Yes
+    # Advertised link modes:  10baseT/Half 10baseT/Full
+    #                         100baseT/Half 100baseT/Full
+    #                         1000baseT/Half 1000baseT/Full
+    # Advertised pause frame use: Symmetric Receive-only
+    # Advertised auto-negotiation: Yes
+    # Link partner advertised link modes:  10baseT/Half 10baseT/Full
+    #                                      100baseT/Half 100baseT/Full
+    # Link partner advertised pause frame use: Symmetric
+    # Link partner advertised auto-negotiation: Yes
+    # Speed: 100Mb/s
+    # Duplex: Full
+    # Port: MII
+    # PHYAD: 0
+    # Transceiver: internal
+    # Auto-negotiation: on
+    # Link detected: yes
+
+    ${cmd_output}  ${stderr}  ${rc}=  BMC Execute Command
+    ...  /usr/sbin/ethtool ${device}
+
+    [Return]  ${status}  ${cmd_output}
+
 # TODO: openbmc/openbmc-test-automation#1331
 Get BMC MAC Address
     [Documentation]  Get system MAC address.
