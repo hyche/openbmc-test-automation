@@ -13,6 +13,10 @@ Test Teardown     FFDC On Test Case Fail
 ${HOST_CHASSIS}=  ${HOST_INVENTORY_URI}fru0/chassis
 ${HOST_BOARD}=  ${HOST_INVENTORY_URI}fru0/board
 ${HOST_PRODUCT}=  ${HOST_INVENTORY_URI}fru0/product
+${interface}   xyz.openbmc_project.Inventory.FRU
+${in_chassis}  xyz.openbmc_project.Inventory.FRU.Chassis
+${in_board}    xyz.openbmc_project.Inventory.FRU.Board
+${in_product}  xyz.openbmc_project.Inventory.FRU.Product
 
 *** Test Cases ***
 
@@ -23,6 +27,17 @@ Verify FRU Info Via DBus Interface
     Verify FRU Interface Exists On DBus
 
     Verify The Valid Of FRU Information
+
+Verify Custom Fields Of FRU Was Updated
+    [Documentation]  Verify the FRU custom fields updated.
+    [Tags]  Verify_Custom_Fields_Of_FRU_Was_Updated
+    [Teardown]  Teardown For Custom Fields Of FRU
+
+    Verify Custom Fields Updating For Chassis Area
+
+    Verify Custom Fields Updating For Board Area
+
+    Verify Custom Fields Updating For Product Area
 
 *** Keywords ***
 
@@ -51,3 +66,77 @@ Verify The Valid Of Board
     # TODO: Check other fields
     Should Be Equal  ${data_board["Manufacturer"]}  AmpereComputing(R)
 
+Verify Custom Fields Updating For Chassis Area
+    [Documentation]  Verify custom fields updating for chassis area
+
+    #Update the value for custom fields
+    ${cmd}=  Catenate  SEPARATOR=
+    ...  busctl set-property ${interface} ${HOST_CHASSIS}
+    ...  ${SPACE}${in_chassis} Custom_Field_5 s "AmpereComputing"
+    BMC Execute Command  ${cmd}
+    # Waiting 10 seconds to write eeprom effectly
+    Sleep  10s
+
+    #Check the value updated with expected
+    ${data_chassis}=  Read Properties  ${HOST_CHASSIS}
+
+    Should Be Equal  ${data_chassis["Custom_Field_5"]}  AmpereComputing
+
+Verify Custom Fields Updating For Board Area
+    [Documentation]  Verify custom fields updating for board area
+
+    #Update the value for custom fields
+    ${cmd}=  Catenate  SEPARATOR=
+    ...  busctl set-property ${interface} ${HOST_BOARD}
+    ...  ${SPACE}${in_board} Custom_Field_5 s "AmpereComputing"
+    BMC Execute Command  ${cmd}
+    # Waiting 10 seconds to write eeprom effectly
+    Sleep  10s
+
+    #Check the value updated with expected
+    ${data_board}=  Read Properties  ${HOST_BOARD}
+
+    Should Be Equal  ${data_board["Custom_Field_5"]}  AmpereComputing
+
+Verify Custom Fields Updating For Product Area
+    [Documentation]  Verify custom fields updating for product area
+
+    #Update the value for custom fields
+    ${cmd}=  Catenate  SEPARATOR=
+    ...  busctl set-property ${interface} ${HOST_PRODUCT}
+    ...  ${SPACE}${in_product} Custom_Field_5 s "AmpereComputing"
+    BMC Execute Command  ${cmd}
+    # Waiting 10 seconds to write eeprom effectly
+    Sleep  10s
+
+    #Check the value updated with expected
+    ${data_product}=  Read Properties  ${HOST_PRODUCT}
+
+    Should Be Equal  ${data_product["Custom_Field_5"]}  AmpereComputing
+
+Teardown For Custom Fields Of FRU
+    [Documentation]  Do teardown for custom fields of FRU
+
+    ${cmd}=  Catenate  SEPARATOR=
+    ...  busctl set-property ${interface} ${HOST_CHASSIS}
+    ...  ${SPACE}${in_chassis} Custom_Field_5 s ""
+    BMC Execute Command   ${cmd}
+    # Waiting 10 seconds to write eeprom effectly
+    Sleep  10s
+    # restore Custom_Field_5 for board object
+    ${cmd}=  Catenate  SEPARATOR=
+    ...  busctl set-property ${interface} ${HOST_BOARD}
+    ...  ${SPACE}${in_board} Custom_Field_5 s ""
+    BMC Execute Command   ${cmd}
+    # Waiting 10 seconds to write eeprom effectly
+    Sleep  10s
+
+    # restore Custom_Field_5 for product object
+    ${cmd}=  Catenate  SEPARATOR=
+    ...  busctl set-property ${interface} ${HOST_PRODUCT}
+    ...  ${SPACE}${in_product} Custom_Field_5 s ""
+    BMC Execute Command   ${cmd}
+    # Waiting 10 seconds to write eeprom effectly
+    Sleep  10s
+
+    FFDC On Test Case Fail
