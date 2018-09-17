@@ -401,6 +401,11 @@ COMPUTER_SYSTEM_ITEMS = {
         "Warning",
         "Critical",
     ],
+    "BOOTSOURCEOVERRIDEENABLED": [
+        "Disabled",
+        "Once",
+        "Continuous",
+    ],
 }
 
 # redfish log collection items from DSP8010_2018.1 Redfish Schema Bundle.

@@ -1,2 +1,3 @@
 # E-MAG test list
 -i Verify_Host_Memory_Interface
+-i Verify_Host_Boot_Interface
