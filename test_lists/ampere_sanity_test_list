@@ -102,7 +102,6 @@
 -i Test_Management_Controller_ID_String_Status_via_IPMI
 -i Test_Management_Controller_ID_String_Status_via_Raw_IPMI
 -i Test_Valid_IPMI_Channels_Supported
--i Set_BootProgress_To_Unspecified_And_Verify
 -i Set_SOL_Disabled
 -i Set_Valid_SOL_Privilege_Level
 -i Set_Invalid_SOL_Privilege_Level
