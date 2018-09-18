@@ -8,6 +8,7 @@ Resource            ../../lib/utils.robot
 Resource            ../../lib/bmc_network_utils.robot
 Library             ../../lib/ipmi_utils.py
 Variables           ../../data/ipmi_raw_cmd_table.py
+Library             Collections
 
 Suite Setup          Suite Setup Execution
 Suite Teardown       Suite Teardown Execution
@@ -66,6 +67,16 @@ Verify IMPI User Change Priv Command
     [Teardown]  Test Teardown For User Privilege Command
 
     Verify Privilege Of User After Setting
+
+Verify IPMI User Summary Command
+    [Documentation]  Verify ipmi user summary
+    [Tags]   Verify_IPMI_User_Summary_Command
+    [Setup]  Test Setup For User Enable Command
+    [Teardown]  Test Teardown For User Disable Command
+
+    Verify Summary Command Valid
+
+    Verify Summary Command Functional
 
 *** Keywords ***
 
@@ -251,6 +262,46 @@ Verify Privilege Of User After Setting
     ${resp}=  Get Lines Containing String  ${data_resp}  ${user_name}
     @{word}=  Split String  ${resp}
     Should Be Equal  @{word}[5]  USER
+
+Verify Summary Command Valid
+    [Documentation]  Verify summary command valid or not
+
+    # Check command is supported or not
+    ${error}  ${data_sum}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Standard Command   user summary
+
+    Should Not Contain  ${data_sum}    Invalid command
+    Should Not Contain  ${data_sum}    Unspecified error
+    Set Test Variable   ${data_sum}
+
+Verify Summary Command Functional
+    [Documentation]  Verify summary command functional
+
+    # Check Maximum IDs is valid in range 1:32
+    ${res}=  Get Lines Containing String  ${data_sum}  Maximum IDs
+    ${maxi_fetch}=  Fetch From Right  ${res}  :${SPACE}
+    ${maxi_fetch}=  Convert To Integer  ${maxi_fetch}
+    Run Keyword If  ${maxi_fetch} > 32 or ${maxi_fetch} < 1
+    ...  Fail  msg=Maximum IDs out of range 1:32
+
+    # Check Enabled User Count value
+    ${res}=  Get Lines Containing String  ${data_sum}  Enabled User Count
+    ${orig_count}=  Fetch From Right  ${res}  :${SPACE}
+    ${orig_count}=  Convert To Integer  ${orig_count}
+
+    Run Keyword And Ignore Error  Run External IPMI Standard Command
+    ...  user enable ${user_id}
+
+    ${error}  ${data_temp}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Standard Command   user summary
+    ${res}=  Get Lines Containing String  ${data_temp}  Enabled User Count
+    ${temp_count}=  Fetch From Right  ${res}  :${SPACE}
+    ${temp_count}=  Convert To Integer  ${temp_count}
+
+    ${expected_count}=  Evaluate  ${orig_count} + 1
+    Should Be Equal  ${expected_count}  ${temp_count}
+
+    # TODO: check "Fixed Name Count" field
 
 Test Teardown For Set Password Command
     [Documentation]  Test Teardown For Set Password Command
