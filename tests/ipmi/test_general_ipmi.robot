@@ -4,6 +4,7 @@ Documentation       This suite is for testing general IPMI functions.
 Resource            ../../lib/rest_client.robot
 Resource            ../../lib/ipmi_client.robot
 Resource            ../../lib/openbmc_ffdc.robot
+Resource            ../../lib/redfish_client.robot
 Resource            ../../lib/boot_utils.robot
 Resource            ../../lib/utils.robot
 Resource            ../../lib/bmc_network_utils.robot
@@ -17,6 +18,8 @@ Test Teardown       FFDC On Test Case Fail
 ${new_mc_id}=  HOST
 ${allowed_temp_diff}=  ${1}
 ${allowed_power_diff}=  ${10}
+${revision}=  ${128}
+${expected_file_path}  ./tests/ipmi/expected_json/dev_id.json
 
 ${HOST_UUID}=  ${HOST_INVENTORY_URI}fru0/multirecord
 
@@ -519,10 +522,11 @@ Verify Get Device ID
     #     0x00
     #     0x03
 
+    ${expected}=  Parse Json From File  ${expected_file_path}
     ${mc_info}=  Get MC Info
 
-    Should Be Equal  ${mc_info['device_id']}  0
-    Should Be Equal  ${mc_info['device_revision']}  0
+    Should Be Equal  ${mc_info['device_id']}  ${expected['id']}
+    Should Be Equal  ${mc_info['device_revision']}  ${expected['revision']}
 
     # Get firmware revision from mc info command output i.e. 2.01
     ${ipmi_fw_major_version}  ${ipmi_fw_minor_version}=
@@ -548,19 +552,22 @@ Verify Get Device ID
 
     # TODO: Verify Manufacturer and Product IDs directly from json file.
     # Reference : openbmc/openbmc-test-automation#1244
-    Should Be Equal  ${mc_info['manufacturer_id']}  42817
-    Should Be Equal  ${mc_info['product_id']}  16975 (0x424f)
+    Should Be Equal  ${mc_info['manufacturer_id']}  ${expected['manuf_id']}
+    ${product_ids}=   Split String  ${mc_info['product_id']}
+    ${product_id}=   Get From List  ${product_ids}  0
+    Should Be Equal  ${product_id}  ${expected['prod_id']}
 
     Should Be Equal  ${mc_info['device_available']}  yes
-    Should Be Equal  ${mc_info['provides_device_sdrs']}  yes
+    # Compare with revision as mask to check device revision enable or not
+    Run Keyword If   '${expected['revision']}' != '${revision}'
+    ...  Should Be Equal  ${mc_info['provides_device_sdrs']}  no
+    ...  ELSE
+    ...  Should Be Equal  ${mc_info['provides_device_sdrs']}  yes
     Should Contain  ${mc_info['additional_device_support']}  Sensor Device
     Should Contain  ${mc_info['additional_device_support']}  SEL Device
     Should Contain
     ...  ${mc_info['additional_device_support']}  FRU Inventory Device
     Should Contain  ${mc_info['additional_device_support']}  Chassis Device
-
-    # Auxiliary revision data verification.
-    ${aux_version}=  Get Aux Version  ${bmc_version_full}
 
     # From aux_firmware_rev_info field ['0x04', '0x38', '0x00', '0x03']
     ${bmc_aux_version}=  Catenate
@@ -571,8 +578,8 @@ Verify Get Device ID
     ...  ${mc_info['aux_firmware_rev_info'][3][2:]}
 
     Should Be Equal As Integers
-    ...  ${bmc_aux_version}  ${aux_version}
-    ...  msg=BMC aux version ${bmc_aux_version} does not match expected value of ${aux_version}.
+    ...  ${bmc_aux_version}  ${expected['aux']}
+    ...  msg=BMC aux version ${bmc_aux_version} does not match expected value.
 
 
 Verify SDR Info
