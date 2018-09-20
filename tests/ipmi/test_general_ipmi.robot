@@ -971,7 +971,9 @@ Verify Value Of GUID
     ${data_uuid}=  Read Properties  ${HOST_UUID}
 
     # Compate with GUID
-    Should Be Equal As Strings    ${data_guid}   ${data_uuid["Record_1"]}
+    ${system_guid}=
+    ...  Get Lines Containing String  ${data_guid}  System GUID
+    Should Contain    ${system_guid}   ${data_uuid["Record_1"]}
 
 Verify MC Getenables Command Valid
     [Documentation]  Verify if the command is valid or not.
