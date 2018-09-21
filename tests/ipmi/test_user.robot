@@ -116,6 +116,10 @@ Get Current User Privilege
 
     ${error}  ${data_resp}=  Run Keyword And Ignore Error
     ...  Run External IPMI Standard Command  user list
+
+    Should Not Contain  ${data_resp}    Invalid command
+    Should Not Contain  ${data_resp}    Unspecified error
+
     ${resp}=  Get Lines Containing String  ${data_resp}  ${user_name}
     @{word}=  Split String  ${resp}
     Set Test Variable  ${priv_data}  @{word}[5]
@@ -254,6 +258,9 @@ Verify Privilege Of User After Setting
     ${error}  ${data_resp}=  Run Keyword And Ignore Error
     ...  Run External IPMI Standard Command
     ...  user priv ${User_ID} 0x02 0x01
+
+    Should Not Contain  ${data_resp}    Invalid command
+    Should Not Contain  ${data_resp}    Unspecified error
 
     # Confirm if the user has the new privilege level
     ${error}  ${data_resp}=  Run Keyword And Ignore Error
