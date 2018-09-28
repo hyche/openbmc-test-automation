@@ -34,7 +34,9 @@ Verify BMC Power Cycle via IPMI
     [Documentation]  Verify IPMI power cycle command works fine.
     [Tags]  Verify_BMC_Power_Cycle_via_IPMI
 
-    REST Power On  stack_mode=skip
+    Initiate Host Boot
+    Wait Until Keyword Succeeds  3 min  10 sec  Is Host Running
+
     Run External IPMI Standard Command  chassis power cycle
     Wait Until Keyword Succeeds  3 min  10 sec  Is Host Off
     Wait Until Keyword Succeeds  3 min  10 sec  Is Host Running
