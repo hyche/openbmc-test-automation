@@ -9,6 +9,7 @@ Resource               ../../lib/boot_utils.robot
 Resource               ../../lib/resource.txt
 Resource               ../../lib/state_manager.robot
 
+Test Setup             Test Setup Execution
 Test Teardown          Test Teardown Execution
 
 *** Test Cases ***
@@ -224,6 +225,11 @@ IPMI Chassis Restart Cause
     Chassis Restart Cause Advanced Test
 
 *** Keywords ***
+
+Test Setup Execution
+    [Documentation]    Set the method of getting the power policy
+
+    Set Test Variable  ${bmc_power_policy_method}  New
 
 Test Teardown Execution
     [Documentation]    Log FFDC if test failed.
