@@ -170,7 +170,8 @@ Suite Teardown Execution
 Suite Setup Execution
     [Documentation]  Do the initial suite setup.
 
-    Smart Power Off
+    Initiate Host PowerOff
+    Wait Until Keyword Succeeds  3 min  10 sec  Is Host Off
 
 Restore Bootmode Setting
     [Documentation]  Restore initial bootmode setting.
