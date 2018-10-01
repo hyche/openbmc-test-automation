@@ -21,14 +21,14 @@ Test IPMI Warm Reset
     [Documentation]  Check IPMI warm reset and wait for BMC to become online.
     [Tags]  Test_IPMI_Warm_Reset
 
-    Repeat Keyword  ${LOOP_COUNT} times  IPMI MC Reset Warm (off)
+    Repeat Keyword  ${LOOP_COUNT} times  IPMI MC Reset Command   warm
 
 
 Test IPMI Cold Reset
     [Documentation]  Check IPMI cold reset and wait for BMC to become online.
     [Tags]  Test_IPMI_Cold_Reset
 
-    Repeat Keyword  ${LOOP_COUNT} times  IPMI MC Reset Cold (off)
+    Repeat Keyword  ${LOOP_COUNT} times  IPMI MC Reset Command   cold
 
 Verify BMC Power Cycle via IPMI
     [Documentation]  Verify IPMI power cycle command works fine.
@@ -59,3 +59,11 @@ Is Chassis Power Off
     ${resp}=  Run IPMI Standard Command  chassis power status
     Should Be Equal As Strings  ${resp}  Chassis Power is off
     ...  msg=Chassis power is not off as expected.
+
+IPMI MC Reset Command
+    [Documentation]  Run command ipmi mc reset cold/warm
+    [Arguments]   ${type_reset}
+
+    Run IPMI Standard Command  mc reset ${type_reset}
+
+    Wait For BMC Ready
