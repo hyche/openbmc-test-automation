@@ -90,7 +90,7 @@ Persist ONETIME Boot Policy After Reset
     Set Boot Policy  ${ONETIME}
     Set Boot Source  ${BOOT_SOURCE_NETWORK}
 
-    OBMC Reboot (off)
+    Initiate BMC Reboot
 
     ${boot}=   Read Attribute  ${CONTROL_URI}/host0/boot/one_time  Enabled
     Should Be Equal  ${boot}  ${ONETIME}
@@ -106,7 +106,7 @@ Persist PERMANENT Boot Policy After Reset
     Set Boot Policy  ${PERMANENT}
     Set Boot Source  ${BOOT_SOURCE_CDROM}
 
-    OBMC Reboot (off)
+    Initiate BMC Reboot
 
     ${boot}=   Read Attribute  ${CONTROL_URI}/host0/boot/one_time  Enabled
     Should Be Equal  ${boot}  ${PERMANENT}
@@ -128,7 +128,7 @@ Verify Boot Mode Persistency After BMC Reboot
     # Set bootmode to non default value.
     Set Boot Mode  ${BOOT_MODE_SAFE}
 
-    OBMC Reboot (off)
+    Initiate BMC Reboot
 
     ${boot_mode_after}=  Read Attribute
     ...  ${CONTROL_HOST_URI}/boot  BootMode
