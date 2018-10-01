@@ -7,6 +7,7 @@ Resource            ../lib/rest_client.robot
 Resource            ../lib/dump_utils.robot
 Resource            ../lib/boot_utils.robot
 Resource            ../lib/utils.robot
+Resource            ../lib/state_manager.robot
 Library             ../lib/bmc_ssh_utils.py
 
 Test Setup          Open Connection And Log In
@@ -53,7 +54,7 @@ Verify Dump Persistency On Reset
 
     Delete All BMC Dump
     ${dump_id}=  Create User Initiated Dump
-    OBMC Reboot (off)
+    Initiate BMC Reboot
     ${resp}=  OpenBMC Get Request  ${DUMP_ENTRY_URI}/list
     Should Be Equal As Strings  ${resp.status_code}  ${HTTP_OK}
     Check Existence of BMC Dump file  ${dump_id}
