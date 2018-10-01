@@ -239,7 +239,8 @@ Post Test Case Execution
 Test Suite Setup
     [Documentation]  Do the initial suite setup.
 
-    Smart Power Off
+    Initiate Host PowerOff
+    Wait Until Keyword Succeeds  3 min  10 sec  Is Host Off
 
     # Set boot policy to default i.e. one time enabled.
     ${valueDict}=  Create Dictionary  data=${1}
