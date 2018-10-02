@@ -7,7 +7,9 @@ Resource               ../lib/redfish_client.robot
 Resource               ../lib/rest_client.robot
 Resource               ../lib/openbmc_ffdc.robot
 Resource               ../lib/ipmi_client.robot
+Resource               ../lib/state_manager.robot
 
+Suite Setup            Suite Setup Execution
 Test Setup             Test Setup Execution
 Test Teardown          Test Teardown Execution
 
@@ -165,3 +167,12 @@ Test Teardown Execution
     ...  Catenate  SEPARATOR=  ${REDFISH_SESSION_URI}  ${session_id}
 
     Redfish Delete Request  ${session_uri}  ${auth_token}
+
+Suite Setup Execution
+    [Documentation]  Do test setup initialization.
+
+    Initiate Host Boot
+    Wait Until Keyword Succeeds
+    ...  10 min  10 sec  Is Host Running
+
+    Wait For BMC Ready
