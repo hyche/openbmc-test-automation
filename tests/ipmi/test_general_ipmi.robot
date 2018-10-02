@@ -8,8 +8,10 @@ Resource            ../../lib/redfish_client.robot
 Resource            ../../lib/boot_utils.robot
 Resource            ../../lib/utils.robot
 Resource            ../../lib/bmc_network_utils.robot
+Resource            ../../lib/logging_utils.robot
 Library             ../../lib/ipmi_utils.py
 Variables           ../../data/ipmi_raw_cmd_table.py
+Library             ../../lib/gen_misc.py
 
 Test Teardown       FFDC On Test Case Fail
 
@@ -25,12 +27,91 @@ ${HOST_UUID}=  ${HOST_INVENTORY_URI}fru0/multirecord
 
 *** Test Cases ***
 
+Verify IPMI SEL Version
+    [Documentation]  Verify IPMI SEL's version info.
+    [Tags]  Verify_IPMI_SEL_Version
+
+    ${version_info}=  Get IPMI SEL Setting  Version
+    ${setting_status}=  Fetch From Left  ${version_info}  (
+    ${setting_status}=  Evaluate  $setting_status.replace(' ','')
+
+    Should Be True  ${setting_status} >= 1.5
+    Should Contain  ${version_info}  v2 compliant  case_insensitive=True
+
+
+Verify Empty SEL
+    [Documentation]  Verify empty SEL list.
+    [Tags]  Verify_Empty_SEL
+
+    Delete Error Logs And Verify
+
+    ${resp}=  Run IPMI Standard Command  sel list
+    Should Contain  ${resp}  SEL has no entries  case_insensitive=True
+
+
 Verify Supported Cipher List
     [Documentation]  Execute all supported cipher levels and verify.
     [Tags]  Verify_Supported_Cipher_List
 
     :FOR  ${cipher_level}  IN  @{valid_cipher_list}
-    \  Execute IPMI Command With Cipher  ${cipher_level}
+    \  ${status}=  Execute IPMI Command With Cipher  ${cipher_level}
+    \  Should Be Equal  ${status}  ${0}
+
+
+Verify Unsupported Cipher List
+    [Documentation]  Execute all unsupported cipher levels and verify error.
+    [Tags]  Verify_Unsupported_Cipher_List
+
+    :FOR  ${cipher_level}  IN  @{unsupported_cipher_list}
+    \  ${status}=  Execute IPMI Command With Cipher  ${cipher_level}
+    \  Should Be Equal  ${status}  ${1}
+
+
+Verify Supported Cipher List Via Lan Print
+    [Documentation]  Verify supported cipher list via IPMI lan print command.
+    [Tags]  Verify_Supported_Cipher_List_Via_Lan_Print
+
+    ${network_info_dict}=  Get Lan Print Dict
+    # Example 'RMCP+ Cipher Suites' entry: 3,17
+    ${cipher_list}=  Evaluate
+    ...  map(int, $network_info_dict['RMCP+ Cipher Suites'].split(','))
+    Lists Should Be Equal  ${cipher_list}  ${valid_cipher_list}
+
+
+Verify Supported Cipher Via Getciphers
+    [Documentation]  Verify supported chiper list via IPMI getciphers command.
+    [Tags]  Verify_Supported_Cipher_Via_Getciphers
+
+    ${output}=  Run IPMI Standard Command  channel getciphers ipmi
+    # Example of getciphers command output:
+    # ID   IANA    Auth Alg        Integrity Alg   Confidentiality Alg
+    # 3    N/A     hmac_sha1       hmac_sha1_96    aes_cbc_128
+    # 17   N/A     hmac_sha256     sha256_128      aes_cbc_128
+
+    ${report}=  Outbuf To Report  ${output}
+    # Make list from the 'id' column in the report.
+    ${cipher_list}=  Evaluate  [int(x['id']) for x in $report]
+    Lists Should Be Equal  ${cipher_list}  ${valid_cipher_list}
+
+
+Verify Disabling And Enabling IPMI Via Host
+    [Documentation]  Verify disabling and enabling IPMI via host.
+    [Tags]  Verify_Disabling_And_Enabling_IPMI_Via_Host
+    [Teardown]  Run Inband IPMI Standard Command  lan set 1 access on
+
+    # Disable IPMI and verify
+    Run Inband IPMI Standard Command  lan set 1 access off
+    Run Keyword and Expect Error  *Unable to establish IPMI*
+    ...  Run External IPMI Standard Command  lan print
+
+    # Enable IPMI and verify
+    Run Inband IPMI Standard Command  lan set 1 access on
+    ${lan_print_output}=  Run External IPMI Standard Command  lan print
+
+    ${openbmc_host_name}  ${openbmc_ip}  ${openbmc_short_name}=
+    ...  Get Host Name IP  host=${OPENBMC_HOST}  short_name=1
+    Should Contain  ${lan_print_output}  ${openbmc_ip}
+
 
 Set Asset Tag With Valid String Length
     [Documentation]  Set asset tag with valid string length and verify.
@@ -330,16 +411,6 @@ Verify Get DCMI Capabilities
     ...  msg=Supported DCMI capabilities not present.
 
 
-Test Power Reading Via IPMI With Host Booted
-    [Documentation]  Test power reading via IPMI with host booted state and
-    ...  verify using REST.
-    [Tags]  Test_Power_Reading_Via_IPMI_With_Host_Booted
-
-    REST Power On  stack_mode=skip  quiet=1
-
-    Verify Power Reading
-
-
 Test Power Reading Via IPMI With Host Off
     [Documentation]  Test power reading via IPMI with host off state and
     ...  verify using REST.
@@ -347,7 +418,20 @@ Test Power Reading Via IPMI With Host Off
 
     REST Power Off  stack_mode=skip  quiet=1
 
-    Verify Power Reading
+    Wait Until Keyword Succeeds  1 min  20 sec  Verify Power Reading
+
+
+Test Power Reading Via IPMI With Host Booted
+    [Documentation]  Test power reading via IPMI with host booted state and
+    ...  verify using REST.
+    [Tags]  Test_Power_Reading_Via_IPMI_With_Host_Booted
+
+    REST Power On  stack_mode=skip  quiet=1
+
+    # For a good power reading take a 3 samples for 15 seconds interval and
+    # average it out.
+
+    Wait Until Keyword Succeeds  1 min  20 sec  Verify Power Reading
 
 
 Test Power Reading Via IPMI Raw Command
@@ -360,44 +444,9 @@ Test Power Reading Via IPMI Raw Command
     # 2        Group Extension Identification = DCh
     # 3:4      Current Power in watts
 
-    ${ipmi_raw_output}=  Run IPMI Standard Command
-    ...  raw ${IPMI_RAW_CMD['power_reading']['Get'][0]}
+    REST Power On  stack_mode=skip  quiet=1
 
-    @{raw_output_list}=  Split String  ${ipmi_raw_output}  ${SPACE}
-
-    # On successful execution of raw IPMI power reading command, completion
-    # code does not come in output. So current power value will start from 2
-    # byte instead of 3.
-
-    ${power_reading_ipmi_raw_3_item}=  Get From List  ${raw_output_list}  2
-    ${power_reading_ipmi_raw_3_item}=
-    ...  Convert To Integer  0x${power_reading_ipmi_raw_3_item}
-
-    ${power_reading_rest}=  Read Attribute
-    ...  ${SENSORS_URI}power/total_power  Value
-
-    # Example of power reading via REST
-    #  "CriticalAlarmHigh": 0,
-    #  "CriticalAlarmLow": 0,
-    #  "CriticalHigh": 3100000000,
-    #  "CriticalLow": 0,
-    #  "Scale": -6,
-    #  "Unit": "xyz.openbmc_project.Sensor.Value.Unit.Watts",
-    #  "Value": 228000000,
-    #  "WarningAlarmHigh": 0,
-    #  "WarningAlarmLow": 0,
-    #  "WarningHigh": 3050000000,
-    #  "WarningLow": 0
-
-    # Get power value based on scale i.e. Value * (10 power Scale Value)
-    # e.g. from above case 228000000 * (10 power -6) = 228000000/1000000
-
-    ${power_reading_rest}=  Evaluate  ${power_reading_rest}/1000000
-    ${ipmi_rest_power_diff}=
-    ...  Evaluate  abs(${power_reading_rest} - ${power_reading_ipmi_raw_3_item})
-
-    Should Be True  ${ipmi_rest_power_diff} <= ${allowed_power_diff}
-    ...  msg=Power Reading above allowed threshold ${allowed_power_diff}.
+    Wait Until Keyword Succeeds  1 min  20 sec  Verify Power Reading Via Raw Command
 
 
 Test Baseboard Temperature Via IPMI
@@ -639,7 +688,7 @@ Test Invalid IPMI Channel Response
     ${channel_number}=  Evaluate  ${channel_count} + 1
 
     # Example of invalid channel:
-    # $ ipmitool -I lanplus -H xx.xx.xx.xx -P 0penBmc lan print 3
+    # $ ipmitool -I lanplus -H xx.xx.xx.xx -P password lan print 3
     # Get Channel Info command failed: Parameter out of range
     # Invalid channel: 3
 
@@ -794,7 +843,7 @@ Set Management Controller ID String
 
 
 Get Management Controller ID String And Verify
-    [Documentation]  Get the management controller ID sting.
+    [Documentation]  Get the management controller ID string.
     [Arguments]  ${string}
 
     # Description of argument(s):
@@ -852,6 +901,49 @@ Verify Power Reading
 
     Run Keyword If  '${power_reading['instantaneous_power_reading']}' != '0'
     ...  Verify Power Reading Using REST  ${power_reading['instantaneous_power_reading']}
+
+
+Verify Power Reading Via Raw Command
+    [Documentation]  Get dcmi power reading via IPMI raw command.
+
+    ${ipmi_raw_output}=  Run IPMI Standard Command
+    ...  raw ${IPMI_RAW_CMD['power_reading']['Get'][0]}
+
+    @{raw_output_list}=  Split String  ${ipmi_raw_output}  ${SPACE}
+
+    # On successful execution of raw IPMI power reading command, completion
+    # code does not come in output. So current power value will start from 2
+    # byte instead of 3.
+
+    ${power_reading_ipmi_raw_3_item}=  Get From List  ${raw_output_list}  2
+    ${power_reading_ipmi_raw_3_item}=
+    ...  Convert To Integer  0x${power_reading_ipmi_raw_3_item}
+
+    ${power_reading_rest}=  Read Attribute
+    ...  ${SENSORS_URI}power/total_power  Value
+
+    # Example of power reading via REST
+    #  "CriticalAlarmHigh": 0,
+    #  "CriticalAlarmLow": 0,
+    #  "CriticalHigh": 3100000000,
+    #  "CriticalLow": 0,
+    #  "Scale": -6,
+    #  "Unit": "xyz.openbmc_project.Sensor.Value.Unit.Watts",
+    #  "Value": 228000000,
+    #  "WarningAlarmHigh": 0,
+    #  "WarningAlarmLow": 0,
+    #  "WarningHigh": 3050000000,
+    #  "WarningLow": 0
+
+    # Get power value based on scale i.e. Value * (10 power Scale Value)
+    # e.g. from above case 228000000 * (10 power -6) = 228000000/1000000
+
+    ${power_reading_rest}=  Evaluate  ${power_reading_rest}/1000000
+    ${ipmi_rest_power_diff}=
+    ...  Evaluate  abs(${power_reading_rest} - ${power_reading_ipmi_raw_3_item})
+
+    Should Be True  ${ipmi_rest_power_diff} <= ${allowed_power_diff}
+    ...  msg=Power Reading above allowed threshold ${allowed_power_diff}.
 
 
 Verify Management Controller ID String Status
@@ -933,7 +1025,7 @@ Execute IPMI Command With Cipher
     ...  ${SPACE}${HOST}${SPACE}${OPENBMC_HOST}${SPACE}mc info
 
     ${rc}  ${output}=  Run And Return RC and Output  ${ipmi_cmd}
-    Should Be Equal  ${rc}  ${0}  msg=${output}
+    [Return]  ${rc}
 
 Verify Selftest Command Valid
     [Documentation]  Verify if the command is valid or not.

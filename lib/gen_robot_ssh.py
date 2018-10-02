@@ -9,9 +9,14 @@ import sys
 import re
 import socket
 import paramiko
-import exceptions
+try:
+    import exceptions
+except ImportError:
+    import builtins as exception
 
 import gen_print as gp
+import func_timer as ft
+func_timer = ft.func_timer_class()
 
 from robot.libraries.BuiltIn import BuiltIn
 from SSHLibrary import SSHLibrary
@@ -159,7 +164,8 @@ def execute_ssh_command(cmd_buf,
                         ignore_err=1,
                         fork=0,
                         quiet=None,
-                        test_mode=None):
+                        test_mode=None,
+                        time_out=None):
     r"""
     Run the given command in an SSH session and return the stdout, stderr and
     the return code.
@@ -204,6 +210,10 @@ def execute_ssh_command(cmd_buf,
     test_mode                       If test_mode is set, this function will
                                     not actually run the command.  This
                                     defaults to the global test_mode value.
+    time_out                        The amount of time to allow for the
+                                    execution of cmd_buf.  A value of None
+                                    means that there is no limit to how long
+                                    the command may take.
     """
 
     gp.lprint_executing()
@@ -262,10 +272,12 @@ def execute_ssh_command(cmd_buf,
                     rc = 0
                 else:
                     stdout, stderr, rc = \
-                        sshlib.execute_command(cmd_buf,
-                                               return_stdout=True,
-                                               return_stderr=True,
-                                               return_rc=True)
+                        func_timer.run(sshlib.execute_command,
+                                       cmd_buf,
+                                       return_stdout=True,
+                                       return_stderr=True,
+                                       return_rc=True,
+                                       time_out=time_out)
         except Exception as execute_exception:
             except_type, except_value, except_traceback = sys.exc_info()
             gp.lprint_var(except_type)
@@ -273,10 +285,19 @@ def execute_ssh_command(cmd_buf,
 
             if except_type is exceptions.AssertionError and\
                re.match(r"Connection not open", str(except_value)):
-                login_ssh(login_args)
-                # Now we must continue to next loop iteration to retry the
-                # execute_command.
-                continue
+                try:
+                    login_ssh(login_args)
+                    # Now we must continue to next loop iteration to retry the
+                    # execute_command.
+                    continue
+                except Exception as login_exception:
+                    except_type, except_value, except_traceback =\
+                        sys.exc_info()
+                    rc = 1
+                    stderr = str(except_value)
+                    stdout = ""
+                    break
+
             if (except_type is paramiko.ssh_exception.SSHException
                 and re.match(r"SSH session not active", str(except_value))) or\
                (except_type is socket.error

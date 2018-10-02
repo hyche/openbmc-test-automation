@@ -8,11 +8,16 @@ This module provides many valuable functions such as my_parm_file.
 import sys
 import errno
 import os
-import ConfigParser
+import collections
+import json
+try:
+    import ConfigParser
+except ImportError:
+    import configparser
 try:
     import StringIO
 except ImportError:
-    from io import StringIO
+    import io
 import re
 import socket
 import tempfile
@@ -28,6 +33,7 @@ import gen_cmd as gc
 robot_env = gp.robot_env
 if robot_env:
     from robot.libraries.BuiltIn import BuiltIn
+    from robot.utils import DotDict
 
 
 def add_trailing_slash(dir_path):
@@ -69,6 +75,39 @@ def which(file_path):
     file_path = out_buf.rstrip("\n")
 
     return file_path
+
+
+def add_path(new_path,
+             path,
+             position=0):
+    r"""
+    Add new_path to path, provided that path doesn't already contain new_path,
+    and return the result.
+
+    Example:
+    If PATH has a value of "/bin/user:/lib/user".  The following code:
+
+    PATH = add_path("/tmp/new_path", PATH)
+
+    will change PATH to "/tmp/new_path:/bin/user:/lib/user".
+
+    Description of argument(s):
+    new_path                        The path to be added.  This function will
+                                    strip the trailing slash.
+    path                            The path value to which the new_path
+                                    should be added.
+    position                        The position in path where the new_path
+                                    should be added.  0 means it should be
+                                    added to the beginning, 1 means add it as
+                                    the 2nd item, etc.  sys.maxsize means it
+                                    should be added to the end.
+    """
+
+    path_list = list(filter(None, path.split(":")))
+    new_path = new_path.rstrip("/")
+    if new_path not in path_list:
+        path_list.insert(int(position), new_path)
+    return ":".join(path_list)
 
 
 def dft(value, default):
@@ -204,7 +243,11 @@ def my_parm_file(prop_file_path):
     # get ConfigParser.MissingSectionHeaderError).  Properties files don't
     # need those so I'll write a dummy section header.
 
-    string_file = StringIO.StringIO()
+    try:
+        string_file = StringIO.StringIO()
+    except NameError:
+        string_file = io.StringIO()
+
     # Write the dummy section header to the string file.
     string_file.write('[dummysection]\n')
     # Write the entire contents of the properties file to the string file.
@@ -213,13 +256,19 @@ def my_parm_file(prop_file_path):
     string_file.seek(0, os.SEEK_SET)
 
     # Create the ConfigParser object.
-    config_parser = ConfigParser.ConfigParser()
+    try:
+        config_parser = ConfigParser.ConfigParser()
+    except NameError:
+        config_parser = configparser.ConfigParser()
     # Make the property names case-sensitive.
     config_parser.optionxform = str
     # Read the properties from the string file.
     config_parser.readfp(string_file)
     # Return the properties as a dictionary.
-    return dict(config_parser.items('dummysection'))
+    if robot_env:
+        return DotDict(config_parser.items('dummysection'))
+    else:
+        return collections.OrderedDict(config_parser.items('dummysection'))
 
 
 def file_to_list(file_path,
@@ -313,7 +362,7 @@ def quote_bash_parm(parm):
     return parm
 
 
-def get_host_name_ip(host,
+def get_host_name_ip(host=None,
                      short_name=0):
     r"""
     Get the host name and the IP address for the given host and return them as
@@ -326,6 +375,7 @@ def get_host_name_ip(host,
                                     short_host.
     """
 
+    host = dft(host, socket.gethostname())
     host_name = socket.getfqdn(host)
     try:
         host_ip = socket.gethostbyname(host)
@@ -368,7 +418,7 @@ def pid_active(pid):
 
 
 def to_signed(number,
-              bit_width=gp.bit_length(long(sys.maxsize)) + 1):
+              bit_width=None):
     r"""
     Convert number to a signed number and return the result.
 
@@ -402,6 +452,12 @@ def to_signed(number,
                                     hex value.  Typically, this would be a
                                     multiple of 32.
     """
+
+    if bit_width is None:
+        try:
+            bit_width = gp.bit_length(long(sys.maxsize)) + 1
+        except NameError:
+            bit_width = gp.bit_length(int(sys.maxsize)) + 1
 
     if number < 0:
         return number
@@ -464,3 +520,27 @@ def get_child_pids(quiet=1):
         # Split the output buffer by line into a list.  Strip each element of
         # extra spaces and convert each element to an integer.
         return map(int, map(str.strip, filter(None, output.split("\n"))))
+
+
+def json_loads_multiple(buffer):
+    r"""
+    Convert the contents of the buffer to a JSON array, run json.loads() on it
+    and return the result.
+
+    The buffer is expected to contain one or more JSON objects.
+
+    Description of argument(s):
+    buffer                          A string containing several JSON objects.
+    """
+
+    # Any line consisting of just "}", which indicates the end of an object,
+    # should have a comma appended.
+    regex = "([\\r\\n])[\\}]([\\r\\n])"
+    buffer = re.sub(regex, "\\1},\\2", buffer, 1)
+    # Remove the comma from after the final object and place the whole buffer
+    # inside square brackets.
+    buffer = "[" + re.sub(",([\r\n])$", "\\1}", buffer, 1) + "]"
+    if gp.robot_env:
+        return json.loads(buffer, object_pairs_hook=DotDict)
+    else:
+        return json.loads(buffer, object_pairs_hook=collections.OrderedDict)

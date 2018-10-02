@@ -213,18 +213,6 @@ Create Two Test Error Logs And Delete One
     Should Be Equal As Strings  ${resp.status_code}  ${HTTP_NOT_FOUND}
 
 
-Verify IPMI SEL Version
-    [Documentation]  Verify IPMI SEL's version info.
-    [Tags]  Verify_IPMI_SEL_Version
-
-    ${version_info}=  Get IPMI SEL Setting  Version
-    ${setting_status}=  Fetch From Left  ${version_info}  (
-    ${setting_status}=  Evaluate  $setting_status.replace(' ','')
-
-    Should Be True  ${setting_status} >= 1.5
-    Should Contain  ${version_info}  v2 compliant  case_insensitive=True
-
-
 Verify Watchdog Timedout Error
     [Documentation]  Trigger watchdog timed out and verify errorlog generated.
     [Tags]  Verify_Watchdog_Timedout_Error
@@ -264,16 +252,6 @@ Verify IPMI SEL Delete
     ${sel_list}=  Run IPMI Standard Command  sel list
     Should Be Equal As Strings  ${sel_list}  SEL has no entries
     ...  case_insensitive=True
-
-
-Verify Empty SEL
-    [Documentation]  Verify empty SEL list.
-    [Tags]  Verify_Empty_SEL
-
-    Delete Error Logs And Verify
-
-    ${resp}=  Run IPMI Standard Command  sel list
-    Should Contain  ${resp}  SEL has no entries  case_insensitive=True
 
 
 Delete Non Existing SEL Entry

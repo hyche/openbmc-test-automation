@@ -9,6 +9,7 @@ Resource            ../lib/state_manager.robot
 Resource            ../lib/open_power_utils.robot
 Resource            ../lib/ipmi_client.robot
 Resource            ../lib/boot_utils.robot
+Resource            ../lib/remote_logging_utils.robot
 
 Test Teardown       FFDC On Test Case Fail
 
@@ -29,12 +30,50 @@ ${startup_time_threshold}  180
 
 *** Test Cases ***
 
+Test Remote Logging Configuration
+    [Documentation]  Configure remote log server and verify configuration.
+    [Tags]  Test_Remote_Logging_Configuration
+
+    # Dummy IP and port to update /etc/rsyslog.d/server.conf
+    Configure Remote Log Server With Parameters
+    ...  remote_host=10.10.10.10  remote_port=514
+
+    Verify Rsyslog Config On BMC  remote_host=10.10.10.10  remote_port=514
+
+    # Reset to default configuration.
+    Configure Remote Log Server With Parameters
+    ...  remote_host=${EMPTY}  remote_port=0
+
+
 Verify Front And Rear LED At Standby
     [Documentation]  Front and Rear LED should be off at standby.
     [Tags]  Verify_Front_And_Rear_LED_At_Standby
 
     REST Power Off  stack_mode=skip  quiet=1
     Verify Identify LED State  Off
+
+
+Verify Application Services Running At Standby
+    [Documentation]  Check if there are services that have not completed.
+    [Tags]  Verify_Application_Services_Running_At_Standby
+
+    # Application services running on the BMC are not tightly coupled.
+    # At standby, there shouldn't be any pending job waiting to complete.
+    # Examples:
+    # Failure o/p:
+    # root@witherspoon:~# systemctl list-jobs --no-pager | cat
+    #    JOB UNIT                                     TYPE  STATE
+    # 35151 xyz.openbmc_project.ObjectMapper.service start running
+    # 1 jobs listed.
+    #
+    # Success o/p:
+    # root@witherspoon:~# systemctl list-jobs --no-pager | cat
+    # No jobs running.
+
+    REST Power Off  stack_mode=skip  quiet=1
+    ${stdout}  ${stderr}  ${rc}=  BMC Execute Command
+    ...  systemctl list-jobs --no-pager | cat
+    Should Be Equal As Strings  ${stdout}  No jobs running.
 
 
 Power On Test

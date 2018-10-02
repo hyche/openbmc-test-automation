@@ -23,6 +23,7 @@
 * IO storage and EEH (Enhanced Error Handling) testing
 * Secure boot
 * SNMP (Simple Network Management Protocol)
+* Remote Logging via Rsyslog
 
 **Debugging Supported List**
 * SOL collection
@@ -103,10 +104,13 @@ classified as follows:
 
 `mnfg/`: Contains test cases for factory reset (DHCP mode) and PGOOD testing.
 
-`network/`: Contains test cases for network testing.
+`network/`: Contains test cases for network testing. It covers IPv4 in static mode
+            and in DHCP mode.
 
 `snmp/`: Contains test cases for SNMP (Simple Network Management Protocol)
          configuration testing.
+
+`remote_logging`: Contains test cases for remote logging via rsyslog.
 
 `openpower/ras/`: Contains test cases for RAS (Reliability, Availability and
                   Serviceability) for an OpenPOWER system.

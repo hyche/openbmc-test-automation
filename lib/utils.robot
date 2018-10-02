@@ -754,15 +754,16 @@ Start Journal Log
     ...               journalctl command. By default journal log is collected
     ...               at /tmp/journal_log else user input location.
     ...               The File is appended with datetime.
-    [Arguments]       ${file_path}=/tmp/journal_log
+    [Arguments]       ${file_path}=/tmp/journal_log  ${filter}=${EMPTY}
 
     # Description of arguments:
     # file_path   The file path of the journal file.
 
     ${cur_time}=    Get Time Stamp
     Set Global Variable   ${LOG_TIME}   ${cur_time}
+    Open Connection And Log In
     Start Command
-    ...  journalctl -f > ${file_path}-${LOG_TIME}
+    ...  journalctl -f ${filter} > ${file_path}-${LOG_TIME}
     Log    Journal Log Started: ${file_path}-${LOG_TIME}
 
 
@@ -779,7 +780,7 @@ Stop Journal Log
 
     ${rc}=
     ...  Execute Command
-    ...  ps ax | grep journalctl | grep -v grep
+    ...  ps | grep journalctl | grep -v grep
     ...  return_stdout=False  return_rc=True
 
     Return From Keyword If   '${rc}' == '${1}'
@@ -1547,3 +1548,14 @@ Check For Regex In Journald
     ...    Should Be Empty  ${journal_log}
     ...  ELSE
     ...    Should Not Be Empty  ${journal_log}
+
+
+Get Service Attribute
+    [Documentation]  Get service attribute policy output.
+    [Arguments]  ${option}  ${servicename}
+    # option  systemctl supported options
+    # servicename  Qualified service name
+    ${cmd}=  Set Variable
+    ...  systemctl -p ${option} show ${servicename} | cut -d = -f2
+    ${attr}  ${stderr}  ${rc}=  BMC Execute Command  ${cmd}
+    [Return]  ${attr}

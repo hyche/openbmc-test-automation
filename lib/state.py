@@ -362,7 +362,8 @@ def get_os_state(os_host="",
 
         if must_login:
             output, stderr, rc = bsu.os_execute_command("uptime", quiet=quiet,
-                                                        ignore_err=1)
+                                                        ignore_err=1,
+                                                        time_out=20)
             if rc == 0:
                 os_login = 1
                 os_run_cmd = 1
@@ -506,8 +507,12 @@ def get_state(openbmc_host="",
         cmd_buf = ["BMC Execute Command",
                    re.sub('\\$', '\\$', remote_cmd_buf), 'quiet=1']
         if not quiet:
-            grp.rpissuing_keyword(cmd_buf)
-            grp.rpissuing(remote_cmd_buf)
+            # Get loc_test_mode parm for improved output on pissuing.
+            # See sprint_issuing in gen_print.py for details.
+            loc_test_mode = int(gp.get_var_value(var_name="test_mode",
+                                                 default=0))
+            grp.rpissuing_keyword(cmd_buf, loc_test_mode)
+            gp.pissuing(remote_cmd_buf, loc_test_mode)
         try:
             stdout, stderr, rc =\
                 BuiltIn().wait_until_keyword_succeeds("10 sec", "0 sec",

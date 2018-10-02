@@ -74,7 +74,25 @@ if SHOW_ELAPSED_TIME == "1":
 
 # Initialize some time variables used in module functions.
 start_time = time.time()
-sprint_time_last_seconds = start_time
+# sprint_time_last_seconds is used to calculate elapsed seconds.
+sprint_time_last_seconds = [start_time]
+# Define global index for the sprint_time_last_seconds list.
+last_seconds_ix = 0
+
+
+# Since output from the lprint_ functions goes to a different location than
+# the output from the print_ functions (e.g. a file vs. the console),
+# sprint_time_last_seconds has been created as a list rather than a simple
+# integer so that it can store multiple sprint_time_last_seconds values.
+# Standard print_ functions defined in this file will use
+# sprint_time_last_seconds[0] and the lprint_ functions will use
+# sprint_time_last_seconds[1].
+def lprint_last_seconds_ix():
+    r"""
+    Return lprint last_seconds index value to the caller.
+    """
+    return 1
+
 
 # The user can set environment variable "GEN_PRINT_DEBUG" to get debug output
 # from this module.
@@ -347,14 +365,15 @@ def get_arg_name(var,
             break
     if start_line_ix != 0:
         # Check to see whether the start line is a continuation of the prior
-        # line?
-        line_indent = get_line_indent(source_lines[start_line_ix - 1])
-        if line_indent < start_indent:
+        # line.
+        prior_line = source_lines[start_line_ix - 1]
+        prior_line_stripped = re.sub(r"[ ]*\\([\r\n]$)", " \\1", prior_line)
+        prior_line_indent = get_line_indent(prior_line)
+        if prior_line != prior_line_stripped and\
+           prior_line_indent < start_indent:
             start_line_ix -= 1
-            # Remove the backslash (continuation char).
-            source_lines[start_line_ix] = re.sub(r"[ ]*\\([\r\n]$)",
-                                                 " \\1",
-                                                 source_lines[start_line_ix])
+            # Remove the backslash (continuation char) from prior line.
+            source_lines[start_line_ix] = prior_line_stripped
 
     # Join the start line through the end line into a composite line.
     composite_line = ''.join(map(str.strip,
@@ -367,7 +386,7 @@ def get_arg_name(var,
     if lvalue_string == composite_line:
         # i.e. the regex did not match so there are no lvalues.
         lvalue_string = ""
-    lvalues_list = filter(None, map(str.strip, lvalue_string.split(",")))
+    lvalues_list = list(filter(None, map(str.strip, lvalue_string.split(","))))
     try:
         lvalues = collections.OrderedDict()
     except AttributeError:
@@ -512,6 +531,7 @@ def sprint_time(buffer=""):
     global NANOSECONDS
     global SHOW_ELAPSED_TIME
     global sprint_time_last_seconds
+    global last_seconds_ix
 
     seconds = time.time()
     loc_time = time.localtime(seconds)
@@ -526,13 +546,13 @@ def sprint_time(buffer=""):
     if SHOW_ELAPSED_TIME == "1":
         cur_time_seconds = seconds
         math_string = "%9.9f" % cur_time_seconds + " - " + "%9.9f" % \
-            sprint_time_last_seconds
+            sprint_time_last_seconds[last_seconds_ix]
         elapsed_seconds = eval(math_string)
         if NANOSECONDS == "1":
             elapsed_seconds = "%11.6f" % elapsed_seconds
         else:
             elapsed_seconds = "%4i" % elapsed_seconds
-        sprint_time_last_seconds = cur_time_seconds
+        sprint_time_last_seconds[last_seconds_ix] = cur_time_seconds
         time_string = time_string + " - " + elapsed_seconds
 
     return time_string + " - " + buffer
@@ -779,7 +799,16 @@ def sprint_varx(var_name,
     """
 
     # Determine the type
-    if type(var_value) in (int, long, float, bool, str, unicode) \
+    try:
+        int_types = (int, long)
+    except NameError:
+        int_types = (int,)
+    try:
+        string_types = (str, unicode)
+    except NameError:
+        string_types = (str,)
+    simple_types = int_types + string_types + (float, bool)
+    if type(var_value) in simple_types \
        or var_value is None:
         # The data type is simple in the sense that it has no subordinate
         # parts.
@@ -787,7 +816,7 @@ def sprint_varx(var_name,
         loc_col1_width = loc_col1_width - loc_col1_indent
         # See if the user wants the output in hex format.
         if hex:
-            if type(var_value) not in (int, long):
+            if type(var_value) not in int_types:
                 value_format = "%s"
                 if var_value == "":
                     var_value = "<blank>"
@@ -843,7 +872,7 @@ def sprint_varx(var_name,
         except NameError:
             pass
         if type_is_dict:
-            for key, value in var_value.iteritems():
+            for key, value in var_value.items():
                 if key_list is not None:
                     key_list_regex = "^" + "|".join(key_list) + "$"
                     if not re.match(key_list_regex, key):
@@ -1727,7 +1756,14 @@ dprint_func_template = \
 
 lprint_func_template = \
     [
-        "    gp_log(<mod_qualifier>replace_passwords(<call_line>))"
+        "    global sprint_time_last_seconds",
+        "    global last_seconds_ix",
+        "    if len(sprint_time_last_seconds) <= lprint_last_seconds_ix():",
+        "        sprint_time_last_seconds.append(start_time)",
+        "    save_last_seconds_ix = last_seconds_ix",
+        "    last_seconds_ix = lprint_last_seconds_ix()",
+        "    gp_log(<mod_qualifier>replace_passwords(<call_line>))",
+        "    last_seconds_ix = save_last_seconds_ix",
     ]
 
 replace_dict = {'output_stream': 'stdout', 'mod_qualifier': ''}
