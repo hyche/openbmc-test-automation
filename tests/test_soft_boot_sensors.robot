@@ -56,10 +56,11 @@ Verify Boot AttemptsLeft When Host Reboot
 Verify Boot AttemptsLeft When Power Off
     [Documentation]  Verify the number of boots left while the system is poweref off.
     [Tags]  Verify_Boot_AttemptsLeft_When_Power_Off
+    [SetUp]  Test SetUp For Boot AttemptsLeft When Power Off
     [Template]  Validate Boot AttemptsLeft
 
     # System at standby    AttemptsLeft
-    Off                    2
+    Off                    3
 
 
 Verify Boot Sensor States At Ready
@@ -286,3 +287,8 @@ Post Test Case Execution
    Delete All Error Logs
    Close All Connections
 
+Test SetUp For Boot AttemptsLeft When Power Off
+   [Documentation]  Do the test set up for Boot AttemptsLeft Power Off
+
+   Run Keywords  Initiate Host Boot  AND  Initiate BMC Reboot
+   ...  AND  Wait For BMC Ready
