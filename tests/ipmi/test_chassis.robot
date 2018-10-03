@@ -143,7 +143,7 @@ IPMI Chassis Policy Always On
     #               To simulate the case: AC/mains was removed or lost
     Run External IPMI Standard Command  mc reset warm
 
-    Sleep  60s
+    Sleep  180s
 
     Wait Until Keyword Succeeds  3 min  10 sec  Is Chassis On
 
@@ -170,7 +170,7 @@ IPMI Chassis Policy Always Off
     #               To simulate the case: AC/mains was removed or lost
     Run External IPMI Standard Command  mc reset warm
 
-    Sleep  60s
+    Sleep  180s
 
     Wait Until Keyword Succeeds  3 min  10 sec  Is Chassis Off
 
@@ -206,7 +206,7 @@ IPMI Chassis Policy Previous
     #               To simulate the case: AC/mains was removed or lost
     Run External IPMI Standard Command  mc reset warm
 
-    Sleep  60s
+    Sleep  180s
 
     Wait Until Keyword Succeeds  3 min  10 sec  Is Chassis On
 
