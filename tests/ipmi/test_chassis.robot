@@ -179,19 +179,10 @@ IPMI Chassis Policy Previous
     ...              by using IPMI Chassis policy previous command.
     [Tags]  IPMI_Chassis_Policy_Previous
 
+    Take Effect Chassis Previous
+
     Run External IPMI Standard Command  chassis power off
     Wait Until Keyword Succeeds  30 sec  10 sec  Is Chassis Off
-
-    ${resp}=  Run External IPMI Standard Command  chassis policy always-on
-    Should Not Contain  ${resp}    Invalid command
-    Should Not Contain  ${resp}    Unspecified error
-
-    ${resp}=  Run External IPMI Standard Command  chassis status
-    ${power_policy}=
-    ...  Get Lines Containing String  ${resp}  Power Restore Policy
-    Should Contain  ${power_policy}  always-on
-
-    Sleep  60s
 
     ${resp}=  Run External IPMI Standard Command  chassis policy previous
     Should Not Contain  ${resp}    Invalid command
@@ -239,6 +230,26 @@ Test Teardown Execution
     Set BMC Power Policy  ${ALWAYS_POWER_OFF}
 
     FFDC On Test Case Fail
+
+Take Effect Chassis Previous
+    [Documentation]   Do Effect Chassis Previous before run
+
+    Initiate Host Boot
+    Run External IPMI Standard Command  chassis power off
+    Wait Until Keyword Succeeds  30 sec  10 sec  Is Chassis Off
+
+    ${resp}=  Run External IPMI Standard Command  chassis policy always-on
+    Should Not Contain  ${resp}    Invalid command
+    Should Not Contain  ${resp}    Unspecified error
+
+    ${resp}=  Run External IPMI Standard Command  chassis status
+    ${power_policy}=
+    ...  Get Lines Containing String  ${resp}  Power Restore Policy
+    Should Contain  ${power_policy}  always-on
+
+    Run External IPMI Standard Command  mc reset cold
+    Sleep  180s
+    Wait Until Keyword Succeeds  3 min  10 sec  Is Chassis On
 
 Chassis Restart Cause Basic Test
     [Documentation]  Run basic test to verify system restart cause
