@@ -827,7 +827,9 @@ Get Sensor Count
     # ethernet         | 00h | ns  |  1.1 | Logical FRU @46h
 
     ${output}=  Run IPMI Standard Command  sdr elist all
-    ${sensor_list}=  Split String  ${output}  \n
+    ${sensor_list}=  Get Lines Matching Regexp
+    ...  ${output}  ok|ns|nc|cr|nr  partial_match=true
+    ${sensor_list}=  Split String  ${sensor_list}  \n
     ${sensor_count}=  Get Length  ${sensor_list}
     [Return]  ${sensor_count}
 
