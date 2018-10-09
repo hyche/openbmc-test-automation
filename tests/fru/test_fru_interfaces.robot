@@ -1,6 +1,7 @@
 *** Settings ***
 Documentation     Verify FRU property.
 
+Resource          ../../lib/ipmi_client.robot
 Resource          ../../lib/rest_client.robot
 Resource          ../../lib/openbmc_ffdc.robot
 Resource          ../../lib/resource.txt
@@ -13,10 +14,12 @@ Test Teardown     FFDC On Test Case Fail
 ${HOST_CHASSIS}=  ${HOST_INVENTORY_URI}fru0/chassis
 ${HOST_BOARD}=  ${HOST_INVENTORY_URI}fru0/board
 ${HOST_PRODUCT}=  ${HOST_INVENTORY_URI}fru0/product
+${HOST_MULTIRECORD}=  ${HOST_INVENTORY_URI}fru0/multirecord
 ${interface}   xyz.openbmc_project.Inventory.FRU
 ${in_chassis}  xyz.openbmc_project.Inventory.FRU.Chassis
 ${in_board}    xyz.openbmc_project.Inventory.FRU.Board
 ${in_product}  xyz.openbmc_project.Inventory.FRU.Product
+${FRU_ID}      ${3}
 
 *** Test Cases ***
 
@@ -39,6 +42,14 @@ Verify Custom Fields Of FRU Was Updated
 
     Verify Custom Fields Updating For Product Area
 
+Verify Get FRU Inventory Area Infor
+    [Documentation]  Verify FRU Inventory Area Info command.
+    [Tags]      Verify_Get_FRU_Inventory_Area_Infor
+
+    Verify FRU Interface Exists On DBus
+
+    Verify Value Of FRU Inventory Area Infor
+
 *** Keywords ***
 
 Verify FRU Interface Exists On DBus
@@ -48,7 +59,16 @@ Verify FRU Interface Exists On DBus
     ${data_board}=  Read Properties  ${HOST_BOARD}
     Set Test Variable  ${data_board}
 
-    # TODO: check Chassis/Product area
+    # Check Chassis/Product area
+    ${fru_chassis}=  Read Properties  ${HOST_CHASSIS}
+    Set Test Variable  ${fru_chassis}
+
+    ${fru_product}=  Read Properties  ${HOST_PRODUCT}
+    Set Test Variable  ${fru_product}
+
+    # Check Multirecord area
+    ${fru_multi}=  Read Properties  ${HOST_MULTIRECORD}
+    Set Test Variable  ${fru_multi}
 
 Verify The Valid Of FRU Information
     [Documentation]  Verify the information of FRU.
@@ -65,6 +85,30 @@ Verify The Valid Of Board
 
     # TODO: Check other fields
     Should Be Equal  ${data_board["Manufacturer"]}  AmpereComputing(R)
+
+Verify Value Of FRU Inventory Area Infor
+    [Documentation]  Verify the value of command raw with fru_id
+
+    #Run command raw ipmi, value return LS, MS, 0/1(Bytes/Words)
+    ${resp}=  Run IPMI Standard Command  raw 0x0a 0x10 ${FRU_ID}
+    Should Not Contain   ${resp}   Unable to send RAW command
+
+    #Calculate size of fru
+    ${size_board}=  Convert To Integer  ${data_board["Size"]}
+    ${size_chassis}=  Convert To Integer  ${fru_chassis["Size"]}
+    ${size_product}=  Convert To Integer  ${fru_product["Size"]}
+    ${size_multi}=  Convert To Integer  ${fru_multi["Size"]}
+
+    ${size}=  Evaluate
+    ...  (${size_board}+${size_chassis}+${size_product}+${size_multi})
+
+    ${size_lsb}=  Evaluate  ${size} & 0xFF
+    ${size_lsb}=  Convert To Hex  ${size_lsb}  length=2
+    ${size_msb}=  Evaluate  (${size} >> 8) & 0xFF
+    ${size_msb}=  Convert To Hex  ${size_msb}  length=2
+
+    Should Be Equal As Integers  ${resp}
+    ...  ${size_lsb}${SPACE}${size_msb}${SPACE}${0}${0}
 
 Verify Custom Fields Updating For Chassis Area
     [Documentation]  Verify custom fields updating for chassis area
