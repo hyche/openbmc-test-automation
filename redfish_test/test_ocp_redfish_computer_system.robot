@@ -20,6 +20,11 @@ ${chassis_uri}          Chassis/1
 
 ${file_json}            ./redfish_test/expected_json/ComputerSystem.json
 
+${HOST_CHASSIS}=  ${HOST_INVENTORY_URI}fru0/chassis
+${HOST_BOARD}=  ${HOST_INVENTORY_URI}fru0/board
+${HOST_PRODUCT}=  ${HOST_INVENTORY_URI}fru0/product
+${HOST_MULTIRECORD}=  ${HOST_INVENTORY_URI}fru0/multirecord
+
 *** Test Cases ***
 
 Verify Computer System All Sessions
@@ -63,19 +68,19 @@ Verify Computer System Fixed Sessions
 Verify Computer System Flexible Sessions
     [Documentation]  Verify non-fixed fields of computer system.
 
-    Verify Computer System Hostname
-    Verify Computer System Reset Type
-    Verify Computer System Type
-    Verify Computer System Boot
-    Verify Computer System Indicator Led
-    Verify Computer System Power State
-    Verify Computer System Bios Version
-    Verify Computer System Asset Tag
-    Verify Computer System Status
-    Verify Computer System Information
-    Verify Computer System Processor Summary
-    Verify Computer System Memory Summary
-    Verify Computer System UUID
+    Run keyword And Continue On Failure  Verify Computer System Hostname
+    Run keyword And Continue On Failure  Verify Computer System Reset Type
+    Run keyword And Continue On Failure  Verify Computer System Type
+    Run keyword And Continue On Failure  Verify Computer System Boot
+    Run keyword And Continue On Failure  Verify Computer System Indicator Led
+    Run keyword And Continue On Failure  Verify Computer System Power State
+    Run keyword And Continue On Failure  Verify Computer System Bios Version
+    Run keyword And Continue On Failure  Verify Computer System Information
+    Run keyword And Continue On Failure  Verify Computer System Asset Tag
+    Run keyword And Continue On Failure  Verify Computer System Status
+    Run keyword And Continue On Failure  Verify Computer System Processor Summary
+    Run keyword And Continue On Failure  Verify Computer System Memory Summary
+    Run keyword And Continue On Failure  Verify Computer System UUID
 
 Verify Computer System Hostname
     [Documentation]  Verify the hostname from bmcweb and compare to
@@ -127,16 +132,23 @@ Verify Computer System Status
 Verify Computer System Information
     [Documentation]  Verify FRU properties.
 
-    ${system_list}=  Get Component FRU Info  system
-    ${sys_info}=  Get From List  ${system_list}  ${0}
-    Should Contain  ${output_json["Manufacturer"]}
-    ...  ${sys_info['product_manufacturer']}
-    Should Contain  ${output_json["PartNumber"]}
-    ...  ${sys_info['product_part_number']}
-    Should Contain  ${output_json["Name"]}
-    ...  ${sys_info['product_name']}
-    Should Contain  ${output_json["SerialNumber"]}
-    ...  ${sys_info['product_serial']}
+    ${system_list}=  Read Properties  ${HOST_PRODUCT}
+
+    # Get value via Redfish and compare with Rest
+    ${value}=  Set Variable  ${output_json["Manufacturer"]}
+    Should Be Equal As Strings  ${value}  ${system_list["Manufacturer"]}
+
+    ${value}=  Set Variable  ${output_json["PartNumber"]}
+    Should Be Equal As Strings  ${value}  ${system_list["Part_Number"]}
+
+    ${value}=  Set Variable  ${output_json["Name"]}
+    Should Be Equal As Strings  ${value}  ${system_list["Name"]}
+
+    ${value}=  Set Variable  ${output_json["SerialNumber"]}
+    Should Be Equal As Strings  ${value}  ${system_list["Serial_Number"]}
+
+    ${value}=  Set Variable  ${output_json["SKU"]}
+    Should Be Equal As Strings  ${value}  ${system_list["SKU"]}
 
     # TODO: Update code for mutiple system.
     # This is just for single system.
