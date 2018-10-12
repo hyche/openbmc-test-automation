@@ -4,7 +4,9 @@ Documentation          Test Log Entry Collection schema.
 Resource               ../lib/redfish_client.robot
 Library                OperatingSystem
 Library                Collections
+Library                String
 Resource               ../lib/rest_client.robot
+Resource               ../lib/ipmi_client.robot
 Resource               ../lib/openbmc_ffdc.robot
 Resource               ../lib/utils.robot
 
@@ -101,11 +103,28 @@ Setup Specified Log Entry
     [Documentation]  Do setup for specify log entry
 
     Test Setup Execution
-    ${specify_uri}=  Catenate  SEPARATOR=   ${entries_uri}   /${NUM_SPECIFY}
+    ${value}=  Redfish Get Property  ${entries_uri}  Members  ${auth_token}
+    ${length}=  Get Length  ${value}
+    Run Keyword If  ${length} == 0  Create Entry Log Test
+    ${s_uri}=  Get From Dictionary  @{value}[0]  @odata.id
+    ${specify_uri}=  Remove String  ${s_uri}  /redfish/v1/
+
+    Set Test Variable   ${specify_uri}
     ${output_json}=  Parse Json From Response  ${specify_uri}
     Set Test Variable  ${output_json}
     ${expected_json}=  Parse Json From File  ${specify_file_path}
     Set Test Variable  ${expected_json}
+
+Create Entry Log Test
+    [Documentation]  Create an entry log for test purpose
+
+    # using ipmi to create event 1
+    Run IPMI Standard Command   event 1
+    Sleep  3s
+    ${value}=  Redfish Get Property  ${entries_uri}  Members  ${auth_token}
+    ${length}=  Get Length  ${value}
+    Run Keyword If  ${length} == 0  Fail  msg=Cannot create entry log for test
+    Set Test Variable   ${value}
 
 Verify Fixed Entries Node
     [Documentation]  Verify all the fixed entries got from GET request.
@@ -141,8 +160,8 @@ Verify Flexible Entries Node
 
     # Check @odata.id = "uri" of testcase (combine ID)
     ${exp_dataId}=  Get From Dictionary  ${output_json}  @odata.id
-    ${tmp_dataId}=  Catenate   SEPARATOR=  /redfish/v1/${entries_uri}
-    ...  /${NUM_SPECIFY}
+    ${tmp_dataId}=  Catenate   SEPARATOR=  /redfish/v1/${specify_uri}
+
     Should Be Equal As Strings   ${exp_dataId}  ${tmp_dataId}
 
     # Check "SensorNumber" is exist or not?
@@ -167,8 +186,9 @@ Verify Flexible Entries Node
     # Serverity is contain in list or not?
     ${severity}=  Get Data From Entries  ${output_json}  Severity
     ${severity}=  Create List  ${severity}
+    ${length}=    Get Length  ${severity}
     ${expected_key}=  Get Log Collection Items Schema  SEVERITY
-    Run Keyword If  '${res_logs}' == 'PASS' and '${severity}' != '${EMPTY}'
+    Run Keyword If  '${res_logs}' == 'PASS' and ${length} != 0
     ...  List Should Contain Sub List   ${expected_key}  ${severity}
 
 Parse Json From Response
