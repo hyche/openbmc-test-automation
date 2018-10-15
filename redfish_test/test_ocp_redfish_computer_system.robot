@@ -5,6 +5,8 @@ Resource               ../lib/redfish_client.robot
 Resource               ../lib/rest_client.robot
 Resource               ../lib/openbmc_ffdc.robot
 Resource               ../lib/bmc_network_utils.robot
+Resource               ../lib/state_manager.robot
+Variables              ../data/variables.py
 Library                ../lib/ipmi_utils.py
 
 Force Tags             redfish
@@ -126,7 +128,13 @@ Verify Computer System Power State
 Verify Computer System Status
     [Documentation]  Verify the status or health properties of a resource.
 
+    # Check if current values are depended on supported values
     Test Dynamic Fields  STATE  ${output_json["Status"]["State"]}
+
+    # Check if the current state is "Enabled" when the host is powered on
+    Should Be Equal  ${output_json["Status"]["State"]}  Enabled
+
+    # Check if current values are depended on supported values
     Test Dynamic Fields  HEALTH  ${output_json["Status"]["Health"]}
 
 Verify Computer System Information
@@ -342,8 +350,28 @@ Check Power State
     Should Be Equal As Strings  ${resp["PowerState"]}  ${state}
     ...  msg=Chassis power is not change as expected
 
+Is Host State Running
+    [Documentation]  Check if host state is "Running".
+
+    Is Chassis On
+    ${host_state}=  Get Host State
+    Should Be Equal  Running  ${host_state}
+
+Init Host State Running
+    [Documentation]  Power on the host and wait until Host State is Running
+    ${args}=  Create Dictionary   data=${HOST_POWERON_TRANS}
+
+    Redfish Login Request
+
+    Write Attribute
+    ...  ${HOST_STATE_URI}  RequestedHostTransition   data=${args}
+
+    Wait Until Keyword Succeeds  1 min  10 sec  Is Host State Running
+
 Test Setup Execution
     [Documentation]  Do the pre test setup.
+
+    Init Host State Running
 
     ${session_id}  ${auth_token} =  Redfish Login Request
     Set Test Variable  ${session_id}
