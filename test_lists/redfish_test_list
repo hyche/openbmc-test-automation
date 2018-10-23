@@ -22,6 +22,12 @@
 -i Test_Get_Systems_Node
 -i Test_Computer_System_Collection
 
+# Computer System - EthernetInterfaces collection test cases
+-i Verify_EthernetInterfaces_Collection
+
+# Computer System - Processor collection test cases
+-i Verify_Processor_Collection
+
 # Log Collection test cases
 -i Verify_Log_Entry_Collection_Fixed_Entries
 -i Verify_Log_Entry_Collection_Flexible_Entries
