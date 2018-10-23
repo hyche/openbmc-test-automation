@@ -49,3 +49,12 @@ ${HTTP_GATEWAY_TIMEOUT}                  504
 ${HTTP_HTTP_VERSION_NOT_SUPPORTED}       505
 ${HTTP_INSUFFICIENT_STORAGE}             507
 ${HTTP_NOT_EXTENDED}                     510
+
+# Response codes for each category.
+# 2xx
+@{HTTP_SUCCESS}         ${HTTP_OK}  ${HTTP_CREATED}  ${HTTP_ACCEPTED}
+...                     ${HTTP_NO_CONTENT}
+# 4xx
+@{HTTP_CLIENT_ERROR}    ${HTTP_BAD_REQUEST}  ${HTTP_UNAUTHORIZED}
+...                     ${HTTP_FORBIDDEN}  ${HTTP_NOT_FOUND}
+...                     ${HTTP_METHOD_NOT_ALLOWED}
