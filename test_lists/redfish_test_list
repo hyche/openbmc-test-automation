@@ -6,12 +6,13 @@
 ###########################################################
 
 
-# EthernetInterface test cases
 # Exclude IP test cases, because with DHCP is enabled, the old IP will be lost.
--e Add_New_Valid_IPv4_And_Delete_And_Verify
--e Change_IPv4_With_Empty_Entry_Via_Redfish_And_Verify
--e Change_IPv4_With_Only_Address_Via_Redfish_And_Verify
--e Delete_Non_Existing_IPv4_Via_Redfish_And_Verify
+-i Verify_Redfish_Ethernet_Interface_Hostname
+-i Verify_Ethernet_Interface_Speed
+-i Verify_Ethernet_Interface_Auto_Negotiation
+-i Verify_Ethernet_Interface_Interface_Enabled
+-i Verify_Redfish_Ethernet_Interface_Fixed_Entries
+-i Verify_Ethernet_Interface_MAC_Address
 
 # Computer System test cases
 -i Verify_Computer_System_All_Sessions
