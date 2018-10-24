@@ -30,13 +30,13 @@ Redfish Login Request
     #                   This defaults to "openbmc"
     # timeout           REST login attempt time out.
 
-    Create Session  openbmc  ${REDFISH_AUTH_URI}  timeout=${timeout}
+    Create Session  ${alias_session}  ${REDFISH_AUTH_URI}  timeout=${timeout}
     ${headers}=  Create Dictionary  Content-Type=application/json
 
     ${data}=  Create Dictionary
     ...  UserName=${openbmc_username}  Password=${openbmc_password}
 
-    ${resp}=  Post Request  openbmc
+    ${resp}=  Post Request  ${alias_session}
     ...  ${REDFISH_SESSION}  data=${data}  headers=${headers}
 
     Should Be Equal As Strings  ${resp.status_code}  ${HTTP_OK}
@@ -53,6 +53,7 @@ Redfish Get Request
     [Arguments]  ${uri_suffix}
     ...          ${session_id}=${None}
     ...          ${xauth_token}=${None}
+    ...          ${alias_session}=openbmc
     ...          ${resp_check}=${1}
     ...          ${timeout}=30
 
@@ -61,6 +62,7 @@ Redfish Get Request
     #                  (e.g. 'Systems').
     # session_id       Session id.
     # xauth_token      Authentication token.
+    # alias_session    Session object name. This defaults to "openbmc"
     # resp_check       By default check the response status and return JSON.
     # timeout          Timeout in seconds to establish connection with URI.
 
@@ -81,7 +83,7 @@ Redfish Get Request
     ...  X-Auth-Token=${xauth_token}
 
     ${resp}=  Get Request
-    ...  openbmc  ${base_uri}  headers=${headers}  timeout=${timeout}
+    ...  ${alias_session}  ${base_uri}  headers=${headers}  timeout=${timeout}
 
     Return From Keyword If  ${resp_check} == ${0}   ${resp}
 
@@ -95,15 +97,17 @@ Redfish Delete Request
     [Documentation]  Delete the resource identified by the URI.
     [Arguments]  ${uri_suffix}
     ...          ${xauth_token}
+    ...          ${alias_session}=openbmc
     ...          ${timeout}=10
     ...          ${resp_check}=${1}
 
     # Description of argument(s):
-    # uri_suffix   The URI to establish connection with
-    #             (e.g. 'SessionService/Sessions/XIApcw39QU').
-    # xauth_token  Authentication token.
-    # timeout      Timeout in seconds to establish connection with URI.
-    # resp_check   By default check the response status.
+    # uri_suffix        The URI to establish connection with
+    #                   (e.g. 'SessionService/Sessions/XIApcw39QU').
+    # xauth_token       Authentication token.
+    # alias_session     Session object name. This defaults to "openbmc"
+    # timeout           Timeout in seconds to establish connection with URI.
+    # resp_check        By default check the response status.
 
     ${base_uri} =  Catenate  SEPARATOR=  ${REDFISH_BASE_URI}  ${uri_suffix}
 
@@ -112,7 +116,7 @@ Redfish Delete Request
     ...  X-Auth-Token=${xauth_token}
 
     # Delete server session.
-    ${resp}=  Delete Request  openbmc
+    ${resp}=  Delete Request  ${alias_session}
     ...  ${base_uri}  headers=${headers}  timeout=${timeout}
 
     Return From Keyword If  ${resp_check} == ${0}  ${resp}
@@ -127,12 +131,14 @@ Redfish Patch Request
     [Documentation]  Do REST PATCH request and return the result.
     [Arguments]  ${uri_suffix}
     ...          ${xauth_token}
+    ...          ${alias_session}=openbmc
     ...          ${timeout}=10
     ...          &{kwargs}
 
     # Description of argument(s):
     # uri_suffix      The URI to establish connection with (e.g. 'Systems').
     # xauth_token     Authentication token.
+    # alias_session   Session object name. This defaults to "openbmc"
     # timeout         Timeout in seconds to establish connection with URI.
     # kwargs          Any additional arguments to be passed directly to the
     #                 Patch Request call. For example, the caller might
@@ -143,7 +149,8 @@ Redfish Patch Request
     ${headers}=     Create Dictionary   Content-Type=application/json
     ...  X-Auth-Token=${xauth_token}
     Set To Dictionary   ${kwargs}       headers     ${headers}
-    ${resp}=  Patch Request  openbmc  ${base_uri}  &{kwargs}  timeout=${timeout}
+    ${resp}=  Patch Request  ${alias_session}  ${base_uri}  &{kwargs}
+    ...  timeout=${timeout}
 
     [Return]   ${resp}
 
@@ -152,12 +159,14 @@ Redfish Post Request
     [Documentation]  Do REST POST request and return the result.
     [Arguments]  ${uri_suffix}
     ...          ${xauth_token}
+    ...          ${alias_session}=openbmc
     ...          ${timeout}=10
     ...          &{kwargs}
 
     # Description of argument(s):
     # uri_suffix      The URI to establish connection with (e.g. 'Systems').
     # xauth_token     Authentication token.
+    # alias_session   Session object name. This defaults to "openbmc"
     # timeout         Timeout in seconds to establish connection with URI.
     # kwargs          Any additional arguments to be passed directly to the
     #                 Post Request call. For example, the caller might
@@ -168,7 +177,8 @@ Redfish Post Request
     ${headers}=     Create Dictionary   Content-Type=application/json
     ...  X-Auth-Token=${xauth_token}
     Set To Dictionary   ${kwargs}       headers     ${headers}
-    ${resp}=  Post Request  openbmc  ${base_uri}  &{kwargs}  timeout=${timeout}
+    ${resp}=  Post Request  ${alias_session}  ${base_uri}  &{kwargs}
+    ...  timeout=${timeout}
 
     [Return]   ${resp}
 
