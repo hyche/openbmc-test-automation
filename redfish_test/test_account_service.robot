@@ -14,6 +14,7 @@ ${accounts_uri}         AccountService/Accounts/
 ${user}                 foo
 ${user2}                bar
 ${passw}                dummypassword
+${passw2}               notapassword
 
 *** Test Cases ***
 
@@ -32,6 +33,14 @@ Add User Account Without Password And Verify
 
     # username     # expected_results
     ${user2}       @{HTTP_CLIENT_ERROR}
+
+Edit User Account Password And Verify
+    [Documentation]  Edit user account password and verify.
+    [Tags]  Edit_User_Account_Password_And_Verify
+    [Template]  Edit User Account Password
+
+    # username     # password       # expected_results
+    ${user}        ${passw2}        @{HTTP_SUCCESS}
 
 Delete Non Existent User Account And Verify
     [Documentation]  Delete non-existent user account and verify.
@@ -90,6 +99,54 @@ Delete User Account
     ${status}=  Convert To String  ${resp.status_code}
     List Should Contain Value  ${expected_results}  ${status}
     Verify User Existence On BMC  ${username}  invalid
+
+Edit User Account Password
+    [Documentation]  Change user account's password.
+    [Arguments]  ${username}  ${password}  @{expected_results}
+
+    # Description of arguments(s):
+    # username          A username for identifying user account.
+    # password          New password.
+    # expected_results  Expected statuses of changing user's password.
+
+    Edit User Account Info  ${username}  @{expected_results}
+    ...  Password=${password}
+
+    # Verify with new password
+    Verify User Login Via Redfish  ${username}  ${password}  valid
+
+Edit User Account Info
+    [Documentation]  Change user account's infomation.
+    [Arguments]  ${username}  @{expected_results}  &{account_info}
+
+    # Description of arguments(s):
+    # username          A username for identifying user account. This is a
+    #                   mandatory argument.
+    # expected_results  Expected statuses of changing user's info.
+    # account_info      A dicitonary holds info for modification.
+    #                   (eg: UserName, Password, RoleId, etc)
+
+    ${user_path}=  Catenate  SEPARATOR=  ${accounts_uri}  ${username}
+    ${resp}=  Redfish Patch Request  ${user_path}  ${auth_token}
+    ...   data=${account_info}
+
+    ${status}=  Convert To String  ${resp.status_code}
+    List Should Contain Value  ${expected_results}  ${status}
+
+Verify User Login Via Redfish
+    [Documentation]  Verify to know if the user can login via redfish.
+    [Arguments]  ${username}  ${password}  ${expected_result}
+
+    # Description of arguments(s):
+    # username          Username for login
+    # expected_result   Expected status when login (T
+
+    ${status}=  Run Keyword And Return Status  Redfish Login Request
+    ...  ${username}  ${password}
+    Run Keyword If  '${expected_result}' == 'valid'
+    ...      Should Be True  ${status} == ${True}
+    ...  ELSE
+    ...      Should Be True  ${status} == ${False}
 
 Verify User Existence On BMC
     [Documentation]  Verify the existence of an user on BMC.

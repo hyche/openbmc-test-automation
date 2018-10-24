@@ -8,6 +8,7 @@
 # Account Service test cases
 -i Add_Valid_User_Account_And_Verify
 -i Add_User_Account_Without_Password_And_Verify
+-i Edit_User_Account_Password_And_Verify
 -i Delete_Non_Existent_User_Account_And_Verify
 -i Delete_Valid_User_Account_And_Verify
 
