@@ -42,6 +42,16 @@ Edit User Account Password And Verify
     # username     # password       # expected_results
     ${user}        ${passw2}        @{HTTP_SUCCESS}
 
+Disable User Account And Verify
+    [Documentation]  Disable user account and check if the user can login after
+    ...  that
+    [Tags]  Disable_User_Account_And_Verify
+
+    Edit User Account Info  ${user}  @{HTTP_SUCCESS}  Enabled=${False}
+
+    # Verify login after disabling
+    Verify User Login Via Redfish  ${user}  ${passw2}  invalid
+
 Delete Non Existent User Account And Verify
     [Documentation]  Delete non-existent user account and verify.
     [Tags]  Delete_Non_Existent_User_Account_And_Verify
