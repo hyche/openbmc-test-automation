@@ -18,6 +18,7 @@ ${chassis_uri}           Chassis/1
 ${chassis_node}          ${HOST_INVENTORY_URI}fru0/chassis
 ${product_node}          ${HOST_INVENTORY_URI}fru0/product
 ${file_json}            ./redfish_test/expected_json/Chassis.json
+${reset_uri}             Chassis/1/Actions/Chassis.Reset
 
 *** Test Cases ***
 
@@ -28,6 +29,16 @@ Verify Chassis All Sessions
     Verify Chassis Fixed Sessions
 
     Verify Chassis Flexible Sessions
+
+Verify Chassis Reset Action
+    [Documentation]    Verify chassis reset action by post method.
+    [Tags]  Verify_Chassis_Reset_Action
+
+    Verify Chassis Reset Action Type  ForceOff
+
+    Verify Chassis Reset Action Type  On
+
+    Verify Chassis Reset Action Type  ForceRestart
 
 *** Keywords ***
 
@@ -64,7 +75,6 @@ Check Chassis FRU Information
     Should Be Equal As Strings  ${info["Manufacturer"]}  ${output_json["Manufacturer"]}
     Should Be Equal As Strings  ${info["Name"]}  ${output_json["Model"]}
 
-
 Check Chassis Status
     [Documentation]  Verify status of chassis via redfish.
 
@@ -78,6 +88,52 @@ Verify Flexible Fields
 
     ${expected_value}=  Get Chassis Items Schema  ${expected_key}
     Should Contain  ${expected_value}  ${output_value}
+
+Verify Chassis Reset Action Type
+    [Documentation]  Verify system reset action via some types of Redfish.
+    [Arguments]  ${type}
+
+    # Reset type:
+    # 1. On
+    # 2. ForceOff
+    # 3. ForceRestart
+
+    # Execute Post Action
+    Execute Post Action  ${type}
+
+    # Check Power State Via Reset Types
+    Run Keyword If  '${type}'=='ForceOff'
+    ...  Wait Until Keyword Succeeds  1 min  10 sec
+    ...  Check Power State  off
+    ...  ELSE IF  '${type}'=='On'
+    ...  Wait Until Keyword Succeeds  1 min  10 sec
+    ...  Check Power State  on
+    ...  ELSE  Run Keywords
+    ...  Wait Until Keyword Succeeds  1 min  2 sec
+    ...  Check Power State  off
+    ...  AND  Wait Until Keyword Succeeds  1 min  10 sec
+    ...  Check Power State  on
+
+    # Delay 3 minutes to recover the system.
+    Sleep  3 min
+
+Execute Post Action
+    [Documentation]  Execute system reset action via POST request.
+    [Arguments]  ${type}
+
+    ${data}=  Create Dictionary  ResetType=${type}
+    ${resp}=  Redfish Post Request  ${reset_uri}  ${auth_token}  data=${data}
+    ${status_list}=
+    ...  Create List  '${HTTP_OK}'  '${HTTP_NO_CONTENT}'  '${HTTP_ACCEPTED}'
+    Should Contain  '${status_list}  '${resp.status_code}'
+
+Check Power State
+    [Documentation]  Check the power state of chassis
+    [Arguments]  ${expected_state}
+
+    ${resp}=  Run IPMI Standard Command  chassis status
+    ${power_status}=  Get Lines Containing String  ${resp}  System Power
+    Should Contain  ${power_status}    ${expected_state}
 
 Test Setup Execution
     [Documentation]  Do the pre test setup.
