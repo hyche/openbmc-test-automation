@@ -15,7 +15,8 @@ Test Teardown          Test Teardown Execution
 *** Variables ***
 
 ${chassis_uri}           Chassis/1
-${chassis_node}          ${HOST_INVENTORY_URI}system/chassis
+${chassis_node}          ${HOST_INVENTORY_URI}fru0/chassis
+${product_node}          ${HOST_INVENTORY_URI}fru0/product
 ${file_json}            ./redfish_test/expected_json/Chassis.json
 
 *** Test Cases ***
@@ -50,14 +51,19 @@ Check Chassis Type
 Check Chassis FRU Information
     [Documentation]  Verify FRU information of chassis via redfish.
 
-    ${list}=  Create List  Model  Manufacturer
-    ...  SerialNumber  PartNumber  SKU  AssetTag
     ${info}=  Read Properties  ${chassis_node}
-    :FOR  ${item}  IN  @{list}
-    \  Should Contain  ${info}  ${item}
-    \  ...  msg=${item} is not supported on D-BUS.
-    \  Should Be Equal As Strings  ${info["${item}"]}  ${output_json["${item}"]}
-    \  ...  msg=${item} read via Redfish is not correct.
+    Should Be Equal As Strings  ${info["Serial_Number"]}  ${output_json["SerialNumber"]}
+    Should Be Equal As Strings  ${info["Part_Number"]}  ${output_json["PartNumber"]}
+    Should Be Equal As Strings  ${info["SKU"]}  ${output_json["SKU"]}
+    Should Be Equal As Strings  ${info["Asset_Tag"]}  ${output_json["AssetTag"]}
+
+    # TODO: Chassis Area doesn't include Manufacturer and Model value
+    #       This values are used from Product Area
+    #       Update the test case after Chassis Area support this info
+    ${info}=  Read Properties  ${product_node}
+    Should Be Equal As Strings  ${info["Manufacturer"]}  ${output_json["Manufacturer"]}
+    Should Be Equal As Strings  ${info["Name"]}  ${output_json["Model"]}
+
 
 Check Chassis Status
     [Documentation]  Verify status of chassis via redfish.
