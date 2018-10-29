@@ -2,6 +2,7 @@
 Documentation          This suite tests for ComputerSystem schema version 1.5.0
 
 Resource               ../lib/redfish_client.robot
+Resource               ../lib/ipmi_client.robot
 Resource               ../lib/rest_client.robot
 Resource               ../lib/openbmc_ffdc.robot
 Resource               ../lib/bmc_network_utils.robot
