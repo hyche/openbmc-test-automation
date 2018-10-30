@@ -15,6 +15,8 @@ ${user}                 foo
 ${user2}                bar
 ${passw}                dummypassword
 ${passw2}               notapassword
+&{role_to_priv}         Administrator=priv-admin  Callback=priv-callback
+...                     Operator=priv-operator  ReadOnly=priv-user
 
 *** Test Cases ***
 
@@ -73,7 +75,7 @@ Delete Valid User Account And Verify
 Create User Account
     [Documentation]  Create an account.
     [Arguments]  ${username}  @{expected_results}  &{account}
-    # 'RoleId', and 'Enabled' default to User, and True
+    # 'RoleId', and 'Enabled' default to ReadOnly, and True
 
     # Description of arguments(s):
     # username          A username for login. This is a mandatory argument.
@@ -89,10 +91,15 @@ Create User Account
     ${status}=  Convert To String  ${resp.status_code}
     List Should Contain Value  ${expected_results}  ${status}
 
-    Run Keyword If  ${status[0]} == 2
+    ${test_groups}=  Create List
+    ${role}=  Evaluate  $account.get("RoleId", "ReadOnly")
+    Append To List  ${test_groups}  $role_to_priv.get(${role})
+    Run Keyword If  ${status[0]} == 2  Run Keywords
     ...      Verify User Existence On BMC  ${username}  valid
-    ...  ELSE
+    ...      AND  Verify User Group On BMC  ${username}  @{test_groups}
+    ...  ELSE  Run Keywords
     ...      Verify User Existence On BMC  ${username}  invalid
+    ...      AND  Verify User Group On BMC  ${username}
 
 Delete User Account
     [Documentation]  Delete the account.
@@ -149,7 +156,7 @@ Verify User Login Via Redfish
 
     # Description of arguments(s):
     # username          Username for login
-    # expected_result   Expected status when login (T
+    # expected_result   Login successful or not
 
     ${status}=  Run Keyword And Return Status  Redfish Login Request
     ...  ${username}  ${password}
@@ -157,6 +164,20 @@ Verify User Login Via Redfish
     ...      Should Be True  ${status} == ${True}
     ...  ELSE
     ...      Should Be True  ${status} == ${False}
+
+Verify User Group On BMC
+    [Documentation]  Verify if the use is in the expected groups.
+    [Arguments]  ${username}  @{expected_groups}
+
+    # Description of arguments(s):
+    # username          Username for login
+    # expected_groups   Check if the user is in all of these groups.
+
+    :FOR  ${group}  IN   @{expected_groups}
+    \  ${cmd_output}  ${stderr}  ${rc}=  BMC Execute Command
+    \  ...  grep -w ${username} /etc/group
+    \  Should Contain  ${cmd_output}  ${username}
+    \  ...  msg=${username} doesn't belong to group ${group}
 
 Verify User Existence On BMC
     [Documentation]  Verify the existence of an user on BMC.
