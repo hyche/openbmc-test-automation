@@ -37,6 +37,14 @@ Fan Base Check Number Of Fans
 Fan Base Check Number Of Fan Monitors
     [Documentation]  Verify number of fan monitor daemons.
     [Tags]  Fan_Base_Check_Number_Of_Fan_Monitors
+    [Setup]  Setup For BMC Ready
 
     ${power_state}=  Get Chassis Power State
     Verify Fan Monitors With State  ${power_state}
+
+*** Keywords ***
+
+Setup For BMC Ready
+    [Documentation]  Setup For BMC Ready
+
+    Wait For BMC Ready
