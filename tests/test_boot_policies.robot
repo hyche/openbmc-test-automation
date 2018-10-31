@@ -102,6 +102,7 @@ Persist PERMANENT Boot Policy After Reset
     [Documentation]   Verify PERMANENT boot policy order does not change
     ...               on warm reset.
     [Tags]  chassisboot    Persist_PERMANENT_Boot_Policy_After_Reset
+    [Setup]  Setup For BMC Ready
 
     Set Boot Policy  ${PERMANENT}
     Set Boot Source  ${BOOT_SOURCE_CDROM}
@@ -117,6 +118,7 @@ Persist PERMANENT Boot Policy After Reset
 Verify Boot Mode Persistency After BMC Reboot
     [Documentation]  Verify boot mode persistency after BMC reboot.
     [Tags]  Verify_Boot_Mode_Persistency_After_BMC_Reboot
+    [Setup]  Setup For BMC Ready
     [Teardown]  Run Keywords  Restore Bootmode Setting
     ...  AND  FFDC On Test Case Fail
 
@@ -137,6 +139,10 @@ Verify Boot Mode Persistency After BMC Reboot
     ...  ${boot_mode_after}  ${BOOT_MODE_SAFE}
 
 *** Keywords ***
+Setup For BMC Ready
+    [Documentation]  Setup For BMC Ready
+
+    Wait For BMC Ready
 
 Set Boot Mode
     [Documentation]  Set the host boot mode via REST.
