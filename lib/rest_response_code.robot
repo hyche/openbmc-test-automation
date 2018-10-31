@@ -58,3 +58,5 @@ ${HTTP_NOT_EXTENDED}                     510
 @{HTTP_CLIENT_ERROR}    ${HTTP_BAD_REQUEST}  ${HTTP_UNAUTHORIZED}
 ...                     ${HTTP_FORBIDDEN}  ${HTTP_NOT_FOUND}
 ...                     ${HTTP_METHOD_NOT_ALLOWED}
+# 5xx
+@{HTTP_SERVER_ERROR}    ${HTTP_INTERNAL_SERVER_ERROR}

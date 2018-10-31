@@ -44,15 +44,31 @@ Edit User Account Password And Verify
     # username     # password       # expected_results
     ${user}        ${passw2}        @{HTTP_SUCCESS}
 
+Rename Username To Itself And Verify
+    [Documentation]  Rename username to itself and verify.
+    [Tags]  Rename_Username_To_Itself_And_Verify
+
+    Rename User  ${user}  ${user}  @{HTTP_SERVER_ERROR}
+    Verify User Login Via Redfish  ${user}  ${passw2}  valid
+
+Rename To Valid Username And Verify
+    [Documentation]  Rename username to other and verify.
+    [Tags]  Rename_To_Valid_Username_And_Verify
+
+    Rename User  ${user}  ${user2}  @{HTTP_SUCCESS}
+    Verify User Login Via Redfish  ${user}  ${passw2}  invalid
+    Verify User Login Via Redfish  ${user2}  ${passw2}  valid
+
 Disable User Account And Verify
     [Documentation]  Disable user account and check if the user can login after
     ...  that
     [Tags]  Disable_User_Account_And_Verify
 
-    Edit User Account Info  ${user}  @{HTTP_SUCCESS}  Enabled=${False}
+    # user2 now is a valid one
+    Edit User Account Info  ${user2}  @{HTTP_SUCCESS}  Enabled=${False}
 
     # Verify login after disabling
-    Verify User Login Via Redfish  ${user}  ${passw2}  invalid
+    Verify User Login Via Redfish  ${user2}  ${passw2}  invalid
 
 Delete Non Existent User Account And Verify
     [Documentation]  Delete non-existent user account and verify.
@@ -60,7 +76,7 @@ Delete Non Existent User Account And Verify
     [Template]  Delete User Account
 
     # username      # expected_results
-    ${user2}        @{HTTP_CLIENT_ERROR}
+    ${user}         @{HTTP_CLIENT_ERROR}
 
 Delete Valid User Account And Verify
     [Documentation]  Delete valid user account and verify
@@ -68,7 +84,7 @@ Delete Valid User Account And Verify
     [Template]  Delete User Account
 
     # username      # expected_results
-    ${user}         @{HTTP_SUCCESS}
+    ${user2}        @{HTTP_SUCCESS}
 
 *** Keywords ***
 
@@ -116,6 +132,18 @@ Delete User Account
     ${status}=  Convert To String  ${resp.status_code}
     List Should Contain Value  ${expected_results}  ${status}
     Verify User Existence On BMC  ${username}  invalid
+
+Rename User
+    [Documentation]  Change user account's username.
+    [Arguments]  ${username}  ${new_username}  @{expected_results}
+
+    # Description of arguments(s):
+    # username          A username for identifying user account.
+    # new_username      New username.
+    # expected_results  Expected statuses of changing username.
+
+    Edit User Account Info  ${username}  @{expected_results}
+    ...  UserName=${new_username}
 
 Edit User Account Password
     [Documentation]  Change user account's password.

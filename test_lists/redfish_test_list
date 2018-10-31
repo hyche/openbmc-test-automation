@@ -9,6 +9,8 @@
 -i Add_Valid_User_Account_And_Verify
 -i Add_User_Account_Without_Password_And_Verify
 -i Edit_User_Account_Password_And_Verify
+-i Rename_Username_To_Itself_And_Verify
+-i Rename_To_Valid_Username_And_Verify
 -i Disable_User_Account_And_Verify
 -i Delete_Non_Existent_User_Account_And_Verify
 -i Delete_Valid_User_Account_And_Verify
