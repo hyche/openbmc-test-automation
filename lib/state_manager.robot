@@ -104,6 +104,8 @@ Is Host Running
     # Check to verify that the host is really booted.
     Is OS Booted
 
+    # Waiting 10s for Host ready
+    Sleep  10s
 
 Get Host State Attribute
     [Documentation]  Return the state of the host as a string.
