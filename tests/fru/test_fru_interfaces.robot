@@ -50,7 +50,104 @@ Verify Get FRU Inventory Area Infor
 
     Verify Value Of FRU Inventory Area Infor
 
+Verify Read FRU Data Command
+    [Documentation]  Verify Read FRU data via IPMI command.
+    [Tags]   Verify_Read_FRU_Data_Command
+
+    Verify Read FRU Command Valid
+    Verify Data Of FRU
+
 *** Keywords ***
+
+Verify Read FRU Command Valid
+    [Documentation]  Verify read data FRU via IPMI Command valid or not
+
+    # Run command fru list <fru ID>
+    ${error}  ${data_fru}=  Run Keyword And Ignore Error
+    ...  Run External IPMI Standard Command  fru list ${FRU_ID}
+
+    # Check command is valid
+    Should Not Contain   ${data_fru}  Invalid command
+    Should Not Contain   ${data_fru}  Unspecified error
+    Set Test Variable  ${data_fru}
+
+Verify Data Of FRU
+    [Documentation]  Verify value of data respose
+
+    # Verify data of chassis
+    Verify Data Of Chassis
+    # Verify data of board
+    Verify Data Of Board
+    # Verify data of product
+    Verify Data Of Product
+
+Verify Data Of Chassis
+    [Documentation]  Verify value of chassis data respose
+
+    ${ipmi_partNum}=  Get Lines Containing String
+    ...  ${data_fru}  Chassis Part Number
+    ${ipmi_partNum}=  Fetch From Right  ${ipmi_partNum}  :${SPACE}
+
+    ${ipmi_seriNum}=  Get Lines Containing String
+    ...  ${data_fru}  Chassis Serial
+    ${ipmi_seriNum}=  Fetch From Right  ${ipmi_seriNum}  :${SPACE}
+
+    ${fru_chassis}=  Read Properties  ${HOST_CHASSIS}
+
+    Should Be Equal As Strings  ${ipmi_partNum}  ${fru_chassis["Part_Number"]}
+    Should Be Equal As Strings  ${ipmi_seriNum}  ${fru_chassis["Serial_Number"]}
+
+Verify Data Of Board
+    [Documentation]  Verify value of board data respose
+
+    ${ipmi_partNum}=  Get Lines Containing String
+    ...  ${data_fru}  Board Part Number
+    ${ipmi_partNum}=  Fetch From Right  ${ipmi_partNum}  :${SPACE}
+
+    ${ipmi_seriNum}=  Get Lines Containing String
+    ...  ${data_fru}  Board Serial
+    ${ipmi_seriNum}=  Fetch From Right  ${ipmi_seriNum}  :${SPACE}
+
+    ${ipmi_name}=  Get Lines Containing String  ${data_fru}  Board Product
+    ${ipmi_name}=  Fetch From Right  ${ipmi_name}  :${SPACE}
+
+    ${ipmi_mfg}=  Get Lines Containing String  ${data_fru}  Board Mfg
+    ${ipmi_mfg}=  Fetch From Right  ${ipmi_mfg}  :${SPACE}
+
+    ${fru_board}=  Read Properties  ${HOST_BOARD}
+
+    Should Be Equal As Strings  ${ipmi_partNum}  ${fru_board["Part_Number"]}
+    Should Be Equal As Strings  ${ipmi_seriNum}  ${fru_board["Serial_Number"]}
+    Should Be Equal As Strings  ${ipmi_name}  ${fru_board["Name"]}
+    Should Be Equal As Strings  ${ipmi_mfg}  ${fru_board["Manufacturer"]}
+
+Verify Data Of Product
+    [Documentation]  Verify value of product data respose
+
+    ${ipmi_partNum}=  Get Lines Containing String
+    ...  ${data_fru}  Product Part Number
+    ${ipmi_partNum}=  Fetch From Right  ${ipmi_partNum}  :${SPACE}
+
+    ${ipmi_seriNum}=  Get Lines Containing String
+    ...  ${data_fru}  Product Serial
+    ${ipmi_seriNum}=  Fetch From Right  ${ipmi_seriNum}  :${SPACE}
+
+    ${ipmi_mfg}=  Get Lines Containing String  ${data_fru}  Product Manufacturer
+    ${ipmi_mfg}=  Fetch From Right  ${ipmi_mfg}  :${SPACE}
+
+    ${ipmi_ver}=  Get Lines Containing String  ${data_fru}  Product Version
+    ${ipmi_ver}=  Fetch From Right  ${ipmi_ver}  :${SPACE}
+
+    ${ipmi_name}=  Get Lines Containing String  ${data_fru}  Product Name
+    ${ipmi_name}=  Fetch From Right  ${ipmi_name}  :${SPACE}
+
+    ${fru_product}=  Read Properties  ${HOST_PRODUCT}
+
+    Should Be Equal As Strings  ${ipmi_partNum}  ${fru_product["Model_Number"]}
+    Should Be Equal As Strings  ${ipmi_seriNum}  ${fru_product["Serial_Number"]}
+    Should Be Equal As Strings  ${ipmi_mfg}  ${fru_product["Manufacturer"]}
+    Should Be Equal As Strings  ${ipmi_ver}  ${fru_product["Version"]}
+    Should Be Equal As Strings  ${ipmi_name}  ${fru_product["Name"]}
 
 Verify FRU Interface Exists On DBus
     [Documentation]  Verify FRU interface exists on D-Bus or not.

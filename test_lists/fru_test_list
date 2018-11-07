@@ -1,3 +1,4 @@
 # FRU test list
 -i Verify_FRU_Info_Via_DBus_Interface
 -i Verify_Custom_Fields_Of_FRU_Was_Updated
+-i Verify_Read_FRU_Data_Command
