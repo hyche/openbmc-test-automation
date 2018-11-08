@@ -38,6 +38,9 @@
 # Computer System - Processor collection test cases
 -i Verify_Processor_Collection
 
+# Computer System - Memory Collection test cases
+-i Verify_Memory_Collection
+
 # Log Collection test cases
 -i Verify_Log_Entry_Collection_Fixed_Entries
 -i Verify_Log_Entry_Collection_Flexible_Entries
