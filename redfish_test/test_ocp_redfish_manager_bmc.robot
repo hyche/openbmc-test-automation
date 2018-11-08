@@ -6,6 +6,7 @@ Resource               ../lib/rest_client.robot
 Resource               ../lib/openbmc_ffdc.robot
 Resource               ../lib/bmc_network_utils.robot
 Resource               ../lib/code_update_utils.robot
+Resource               ../lib/state_manager.robot
 Library                ../lib/ipmi_utils.py
 
 Force Tags             redfish
@@ -124,13 +125,10 @@ Verify Manager BMC Reset Action Type
     # Execute Post Action
     Execute Post Action  ${type}
 
-    # Check BMC Power State
-    # Wait for BMC state  NotReady
-    Wait Until Keyword Succeeds  5 min  5 sec  Check BMC IP  False
-    Wait Until Keyword Succeeds  5 min  5 sec  Check BMC IP  True
-
-    # Delay 3 minutes to recover the system.
-    Sleep  3 min
+    # Check BMC has occurred reset or not.
+    Check BMC Reset
+    # Check BMC state and wait for BMC Ready
+    Wait For BMC Ready
 
 Execute Post Action
     [Documentation]  Execute bmc reset action via POST request.
@@ -142,12 +140,11 @@ Execute Post Action
     ...  Create List  '${HTTP_OK}'  '${HTTP_NO_CONTENT}'  '${HTTP_ACCEPTED}'
     Should Contain  '${status_list}  '${resp.status_code}'
 
-Check BMC IP
-    [Documentation]  Check BMC IP via ping command.
-    [Arguments]  ${expected_status}
-
-    ${status}=  Run Keyword And Return Status  Ping Host  ${OPENBMC_HOST}
-    Should Be Equal As Strings  ${status}  ${expected_status}
+Check BMC Reset
+    [Documentation]  Check BMC Reset State.
+    ${session_active}=  Check If BMC Reboot Is Initiated
+    Run Keyword If  '${session_active}' == '${True}'
+    ...  Fail  msg=BMC Reboot didn't occur.
 
 Test Setup Execution
     [Documentation]  Do the pre test setup.
