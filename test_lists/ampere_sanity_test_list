@@ -95,9 +95,7 @@
 -i IPMI_Chassis_Status_Off
 -i IPMI_Chassis_Restore_Power_Policy
 -i Verify_Host_PowerOff_Via_IPMI
--i Set_Asset_Tag_With_Valid_String_Length
--i Set_Asset_Tag_With_Invalid_String_Length
--i Set_Asset_Tag_With_Valid_String_Length_Via_REST
+-i Read_DCMI_Asset_Tag_Via_IPMI_Command
 -i Verify_Get_And_Set_Management_Controller_ID_String
 -i Test_Management_Controller_ID_String_Status_via_IPMI
 -i Test_Management_Controller_ID_String_Status_via_Raw_IPMI

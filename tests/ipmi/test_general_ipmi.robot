@@ -24,6 +24,7 @@ ${revision}=  ${128}
 ${expected_file_path}  ./tests/ipmi/expected_json/dev_id.json
 
 ${HOST_UUID}=  ${HOST_INVENTORY_URI}fru0/multirecord
+${HOST_PRODUCT}=  ${HOST_INVENTORY_URI}fru0/product
 
 *** Test Cases ***
 
@@ -150,6 +151,12 @@ Set Asset Tag With Valid String Length Via REST
     ...  AssetTag
     Should Be Equal As Strings  ${asset_tag}  ${random_string}
 
+Read DCMI Asset Tag Via IPMI Command
+    [Documentation]  Get DCMI Asset Tag use IPMI Command
+    [Tags]  Read_DCMI_Asset_Tag_Via_IPMI_Command
+
+    Verify Read DCMI Command Valid
+    Verify Data Of AssetTag
 
 Verify Get And Set Management Controller ID String
     [Documentation]  Verify get and set management controller ID string.
@@ -741,6 +748,29 @@ Verify IPMI MC Getenables Command
     Verify MC Getenables Command Functional
 
 *** Keywords ***
+
+Verify Read DCMI Command Valid
+    [Documentation]  Verify Read DCMI Command
+
+    # Run command dcmi asset_tag
+    ${data_astag}=   Run IPMI Standard Command   dcmi asset_tag
+
+    # Check command is valid or not
+    Should Not Contain   ${data_astag}  Invalid command
+    Should Not Contain   ${data_astag}  Unspecified error
+    Set Test Variable    ${data_astag}
+
+Verify Data Of AssetTag
+    [Documentation]  Verify value of AssetTag
+
+    # Get value asset_tag from fru product interface
+    ${fru_product}=  Read Properties  ${HOST_PRODUCT}
+
+    # Comapre value of Asset_Tag
+    ${Asset_Tag}=  Get Lines Containing String  ${data_astag}  Asset tag
+    ${Asset_Tag}=  Fetch From Right  ${Asset_Tag}  :${SPACE}
+
+    Should Be Equal As Strings  ${Asset_Tag}  ${fru_product["Asset_Tag"]}
 
 Get Key Value From Output
     [Documentation]  Get key value after colon and strip whitespace.
