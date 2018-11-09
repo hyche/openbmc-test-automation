@@ -85,7 +85,7 @@ Check Chassis Status
 Check Chassis IndicatorLED
     [Documentation]  Verify property of IndicatorLED via redfish.
 
-    Verify Dynamic Fields  INDICATOR_LED  ${output_json["IndicatorLED"]}
+    Verify Flexible Fields  INDICATOR_LED  ${output_json["IndicatorLED"]}
 
 Verify Flexible Fields
     [Documentation]  Verify expected keys getting from inventory with
@@ -140,14 +140,6 @@ Check Power State
     ${resp}=  Run IPMI Standard Command  chassis status
     ${power_status}=  Get Lines Containing String  ${resp}  System Power
     Should Contain  ${power_status}    ${expected_state}
-
-Verify Dynamic Fields
-    [Documentation]  Verify expected keys getting from inventory with
-    ...  dynamic keys from GET request.
-    [Arguments]  ${expected_key}  ${output_value}
-
-    ${expected_value}=  Get Computer System Items Schema  ${expected_key}
-    Should Contain  ${expected_value}  ${output_value}
 
 Test Setup Execution
     [Documentation]  Do the pre test setup.

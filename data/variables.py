@@ -585,6 +585,12 @@ CHASSIS_ITEMS = {
         "StorageEnclosure",
         "Other"
     ],
+    "INDICATOR_LED": [
+        "Unknown",
+        "Lit",
+        "Blinking",
+        "Off",
+    ],
     "STATE": [
         "Enabled",
         "Disabled",
