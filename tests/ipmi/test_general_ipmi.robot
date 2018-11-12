@@ -25,6 +25,7 @@ ${expected_file_path}  ./tests/ipmi/expected_json/dev_id.json
 
 ${HOST_UUID}=  ${HOST_INVENTORY_URI}fru0/multirecord
 ${HOST_PRODUCT}=  ${HOST_INVENTORY_URI}fru0/product
+${FW_URI}=  ${HOST_INVENTORY_URI}bmc/version
 
 *** Test Cases ***
 
@@ -628,13 +629,15 @@ Verify Get Device ID
     # From aux_firmware_rev_info field ['0x04', '0x38', '0x00', '0x03']
     ${bmc_aux_version}=  Catenate
     ...  SEPARATOR=
-    ...  ${mc_info['aux_firmware_rev_info'][0][2:]}
-    ...  ${mc_info['aux_firmware_rev_info'][1][2:]}
-    ...  ${mc_info['aux_firmware_rev_info'][2][2:]}
     ...  ${mc_info['aux_firmware_rev_info'][3][2:]}
+    ...  ${mc_info['aux_firmware_rev_info'][2][2:]}
+    ...  ${mc_info['aux_firmware_rev_info'][1][2:]}
+    ...  ${mc_info['aux_firmware_rev_info'][0][2:]}
 
+    ${fw_ver}=  Read Properties  ${FW_URI}
+    ${aux_ver}=  Convert To Hex  ${fw_ver["PatchVersion"]}
     Should Be Equal As Integers
-    ...  ${bmc_aux_version}  ${expected['aux']}
+    ...  ${bmc_aux_version}  ${aux_ver}
     ...  msg=BMC aux version ${bmc_aux_version} does not match expected value.
 
 
