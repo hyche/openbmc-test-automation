@@ -36,7 +36,6 @@ Verify Manager BMC Reset Action
     [Tags]  Verify_Manager_BMC_Reset_Action
 
     Verify Manager BMC Reset Action Type  GracefulRestart
-    Verify Manager BMC Reset Action Type  ForceRestart
 
 *** Keywords ***
 
@@ -118,9 +117,7 @@ Verify Manager BMC Reset Action Type
     [Documentation]  Verify bmc reset action via some types of Redfish.
     [Arguments]  ${type}
 
-    # Reset type:
-    # 1. GracefulRestart
-    # 2. ForceRestart
+    # Reset type: GracefulRestart
 
     # Execute Post Action
     Execute Post Action  ${type}
