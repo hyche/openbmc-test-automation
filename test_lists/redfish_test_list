@@ -63,3 +63,6 @@
 # Manager test cases
 -i Verify_Manager_BMC_All_Sessions
 -i Verify_Manager_BMC_Reset_Action
+
+# USB0 ethernet interface test case
+-i Verify_USB0_Ethernet_Interface
