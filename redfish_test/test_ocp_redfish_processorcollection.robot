@@ -55,7 +55,7 @@ Verify Processor Collection Node Valid
 
     ${output_json}=    Get From Response
     ${expected_json}=  Parse Json From File  ${file_json}
-    Should Be Equal  ${output_json}  ${expected_json}
+    Dictionary Should Contain Sub Dictionary  ${expected_json}  ${output_json}
 
 Test Setup Execution
     [Documentation]  Do the pre test setup.
