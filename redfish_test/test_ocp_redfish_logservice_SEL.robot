@@ -114,7 +114,9 @@ Verify Log Service Reset Post Method
     # Get Current Number System Event Log
     ${resp}=  Redfish Get Request  ${SEL_uri}/Entries  ${session_id}
     ...  ${auth_token}
-    Should Be True  ${resp["Member@odata.count"]} == 3
+
+    Run Keyword If  ${resp["Member@odata.count"]} < 3
+    ...  Fail msg=  occur error when Creating Event Log
 
     # Execute Log Service Reset
     Execute Log Service Reset  ${command}
