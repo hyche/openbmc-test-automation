@@ -103,7 +103,7 @@ Check Manager BMC Type
 Check Manager BMC Power State
     [Documentation]  Check power state of manager node.
 
-    Verify Dynamic Fields  POWER_STATE  ${output_json["PowerState"]}
+    Should Be Equal  ${output_json["PowerState"]}  On
 
 Verify Dynamic Fields
     [Documentation]  Verify expected keys read from inventory with
