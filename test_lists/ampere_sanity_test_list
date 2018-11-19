@@ -1,4 +1,4 @@
-# List of sanity test cases from folder tests
+# List of supported test cases from folder tests
 -i Verify_Get_Device_ID
 -i Verify_SDR_Info
 -i Test_IPMI_Warm_Reset
@@ -77,10 +77,7 @@
 -i Set_BMC_Time_With_BMC_And_Manual
 -i Set_BMC_Time_With_Both_And_Manual
 -i Set_BMC_Time_With_Split_And_Manual
--i Set_BMC_Time_With_BMC_And_NTP
 -i Set_BMC_Time_With_Host_And_Manual
--i Set_BMC_Time_With_Both_And_NTP
--i Set_BMC_Time_With_Split_And_NTP
 -i Set_BMC_Time_With_Host_And_NTP
 -i Set_Host_Time_With_Host_And_Manual
 -i Set_Host_Time_With_Both_And_Manual

@@ -14,9 +14,6 @@
 -i Verify_BMC_Power_Cycle_via_IPMI
 -i IPMI_Chassis_Power_Reset
 
--i Verify_Chassis_Identify_via_IPMI
--i Verify_Chassis_Identify_Off_And_Force_Identify_On_via_IPMI
-
 -i IPMI_Chassis_POH
 
 -i IPMI_Chassis_Restore_Power_Policy
@@ -27,7 +24,6 @@
 -i Verify_Power_Policy_Capability_Attribute
 
 -i IPMI_Basic_Chassis_Restart_Cause
--i IPMI_Chassis_Restart_Cause
 
 -i IPMI_Chassis_Status_On
 -i IPMI_Chassis_Status_Off
@@ -42,11 +38,6 @@
 -i Test_Watchdog_Reset_Via_IPMI
 
 
-# Part 3:   IPMI SOL TEST CASE
-
--i Get_SOL_Payload_Status
-
-
 # Part 4:   IPMI SEL TEST CASE
 
 -i Verify_Adding_SEL_with_IPMI
@@ -58,15 +49,5 @@
 
 # Part 6:   IPMI MC TEST CASE
 
--i Verify_IPMI_MC_Self_Test
 -i Verify_IPMI_MC_GUID_Test
--i Verify_IPMI_MC_Getenables_Command
 
-# Part 7:  IPMI USER TEST CASE
-
--i Verify_IPMI_User_Set_Password
--i Verify_IPMI_User_Set_Name_Command
--i Verify_IPMI_User_Enable_Command
--i Verify_IPMI_User_Disable_Command
--i Verify_IPMI_User_Change_Priv_Command
--i Verify_IPMI_User_Summary_Command

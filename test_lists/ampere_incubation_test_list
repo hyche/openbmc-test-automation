@@ -1,0 +1,19 @@
+# List of planned test cases from folder tests
+-i Get_SOL_Payload_Status
+-i IPMI_Chassis_Restart_Cause
+-i Set_BMC_Time_With_BMC_And_NTP
+-i Set_BMC_Time_With_Both_And_NTP
+-i Set_BMC_Time_With_Split_And_NTP
+-i Verify_Chassis_All_Sessions
+-i Verify_Chassis_Identify_Off_And_Force_Identify_On_via_IPMI
+-i Verify_Chassis_Identify_via_IPMI
+-i Verify_Computer_System_Reset_Action
+-i Verify_Indicator_LED_Setting_Function
+-i Verify_IPMI_MC_Getenables_Command
+-i Verify_IPMI_MC_Self_Test
+-i Verify_IPMI_User_Change_Priv_Command
+-i Verify_IPMI_User_Disable_Command
+-i Verify_IPMI_User_Enable_Command
+-i Verify_IPMI_User_Set_Name_Command
+-i Verify_IPMI_User_Set_Password
+-i Verify_IPMI_User_Summary_Command
