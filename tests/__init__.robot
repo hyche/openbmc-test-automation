@@ -22,7 +22,6 @@ System Driver Data
     Run Keyword And Ignore Error  Log BMC Driver Details
     Run Keyword And Ignore Error  Log PNOR Driver Details
     Run Keyword And Ignore Error  Log BMC Model
-    Run Keyword And Ignore Error  Enable Core Dump On BMC
     Run Keyword And Ignore Error  Set Boot Defaults
     Run Keyword And Ignore Error  Set BMC Power Policy  ${ALWAYS_POWER_OFF}
     Run Keyword If  ${FIELD_MODE} == ${True}
