@@ -79,7 +79,7 @@ Check Chassis FRU Information
 Check Chassis Status
     [Documentation]  Verify status of chassis via redfish.
 
-    Verify Flexible Fields  STATE  ${output_json["Status"]["State"]}
+    Should Be Equal  ${output_json["Status"]["State"]}  Enabled
     Verify Flexible Fields  HEALTH  ${output_json["Status"]["Health"]}
 
 Check Chassis IndicatorLED
@@ -143,6 +143,8 @@ Check Power State
 
 Test Setup Execution
     [Documentation]  Do the pre test setup.
+
+    Initiate Host Boot
 
     ${session_id}  ${auth_token} =  Redfish Login Request
     Set Test Variable  ${session_id}
