@@ -84,7 +84,11 @@ Check Manager BMC Firmware Version
     [Documentation]  Check firmware version of manager node.
 
     ${bmc_version}=  Get BMC Version
-    Should Be Equal As Strings  ${bmc_version}
+    ${2th to 5th}=  Get Substring  ${bmc_version}  2  5
+    ${13th to 18th}=  Get Substring  ${bmc_version}  13  18
+    ${expected_value}=  Catenate  SEPARATOR=-  "${2th to 5th}  ${13th to 18th}"
+
+    Should Be Equal As Strings  ${expected_value}
     ...  "${output_json["FirmwareVersion"]}"
 
 Check Manager BMC Reset Type
