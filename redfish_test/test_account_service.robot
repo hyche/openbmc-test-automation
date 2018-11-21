@@ -6,7 +6,8 @@ Resource               ../lib/bmc_network_utils.robot
 
 Force Tags             redfish
 
-Test Setup             Test Setup Execution
+Test Setup             Test Setup Execution  ${OPENBMC_USERNAME}
+...                    ${OPENBMC_PASSWORD}
 Test Teardown          Test Teardown Execution
 
 *** Variables ***
@@ -35,6 +36,21 @@ Add User Account Without Password And Verify
 
     # username     # expected_results
     ${user2}       @{HTTP_CLIENT_ERROR}
+
+Add User Account By Read Only User And Verify
+    [Documentation]  Add an user account by a normal user and verify
+    [Tags]  Add_User_Account_By_Read_Only_User_And_Verify
+    [Setup]  Test Setup Execution  ${user}  ${passw}
+
+    # return status to let it run the cleanup
+    ${status}=  Run Keyword And Return Status
+    ...  Create User Account  ${user2}  @{HTTP_CLIENT_ERROR}
+    ...  @{HTTP_SERVER_ERROR}  Password=${passw}
+
+    # Clean up will be existed until bmcweb implements to handle this.
+    Run Keyword If  ${status} == ${False}  Run Keywords
+    ...     Delete User Account  ${user2}  @{HTTP_SUCCESS}
+    ...     AND  Fail
 
 Edit User Account Password And Verify
     [Documentation]  Edit user account password and verify.
@@ -227,8 +243,10 @@ Verify User Existence On BMC
 
 Test Setup Execution
     [Documentation]  Do the pre test setup.
+    [Arguments]  ${username}  ${password}
 
-    ${session_id}  ${auth_token} =  Redfish Login Request
+    ${session_id}  ${auth_token} =  Redfish Login Request  ${username}
+    ...  ${password}
     Set Test Variable  ${session_id}
     Set Test Variable  ${auth_token}
 
